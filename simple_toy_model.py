@@ -3,7 +3,7 @@
 The aerodynamic model applies a lineal distributed load: F(r,L)= L*r/R
 
 The lift, L, parameter is calculate as function of the tip deflection. It is a simple
-concave parabola: L(tip_def) = -A*(tip_def - tip_def_opt)**2 + L_max
+concave linear: L(tip_def) = -A*abs(tip_def) + L_max
 
 """
 # Import libraries
@@ -20,7 +20,7 @@ def aeroload (tip_def, r):
     The aerodynamic model applies a lineal distributed load: F(r,L)= L*r/R
 
     The lift, L, parameter is calculate as function of the tip deflection. It is a simple
-    concave parabola: L(tip_def) = -A*(tip_def - tip_def_opt)**2 + L_max
+    concave linear: L(tip_def) = -A*abs(tip_def) + L_max
 
     Input:
         tip_def float: deflection of tip of the blade
@@ -30,12 +30,12 @@ def aeroload (tip_def, r):
     """
     tip_def_opt = 1 # [m]
     lift_max = 1e4
-    A = 100
+    A = 1000
 
     # lift = -A*(tip_def -tip_def_opt)**2 + lift_max
 
     # Linear
-    lift = -abs(tip_def)*A + lift_max
+    lift = -A*abs(tip_def) + lift_max
 
     load = lift*r/r[-1]
 
@@ -51,6 +51,8 @@ def save_load (load, folder):
     with open(os.path.join(folder,"force.dat"), 'w') as out_file:
         for line in force_line:
             out_file.write(line)
+
+tip_def = lambda tip_pos: np.sqrt(sum([pos**2 for pos in final_pos[-1,1:3]]))
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
@@ -92,16 +94,18 @@ while abs(delta_u) > epsilon and iter < iter_max:
     # Calculate deflections
     beam = ComplBeam(mainfile)
     corotobj = CoRot(beam,numForceInc=10,max_iter=20)
-    tip_pos = corotobj.final_pos[-2]
+    final_pos = np.reshape(corotobj.final_pos, (-1,6))
+    tip_pos = final_pos[-1,1]
     new_tip_def = tip_pos - tip_init_pos
 
     # Calculate delta
     delta_u = new_tip_def - old_tip_def
 
-    print("--- Iteration finsihed ---")
-    print(f"Iteration {iter} Delta = {delta_u:.5f}")
+    print("--- Iteration finished ---")
+    print(f"Iteration {iter}")
+    print(f"Delta = {delta_u:.5f} m")
+    print(f"Tip load: {load[-1]:.2f} N/m (tip_def = {old_tip_def:.2f})")
     print(f"Tip def: {new_tip_def:.2f} m")
-    print(f"Tip load: {load[-1]:.2f} N/m")
 
 print(tip_def_history)
 
