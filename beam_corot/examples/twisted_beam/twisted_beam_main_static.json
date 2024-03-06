@@ -1,0 +1,10 @@
+{
+"Properties": "property_file_case_2_iso.dat",
+"c2_pos": "c2_pos.dat",
+"Boundary": "boundary.dat",
+"static_load": "force.dat",
+"Analysistype":"static",
+"int_type":"gauss",
+"Npmax": 5 ,
+"Nip": 6
+}
