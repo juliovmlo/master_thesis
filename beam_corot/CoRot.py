@@ -21,9 +21,6 @@ from .utils import subfunctions as subf
 
 class CoRot:
     def __init__(self, beam, numForceInc=10,max_iter=99,eps=1e-6):
-        # Questions:
-        # - What is numForceInc?
-        #       It has something to do with the number of steps. It is like a incremental force.
         self.beam = beam
         self.max_iter = max_iter
         self.eps = eps * np.linalg.norm(self.beam.force)/numForceInc

@@ -32,8 +32,6 @@ def aeroload (tip_def, r):
     lift_max = 1e4
     A = 1000
 
-    # lift = -A*(tip_def -tip_def_opt)**2 + lift_max
-
     # Linear
     lift = -A*abs(tip_def) + lift_max
 
@@ -51,8 +49,6 @@ def save_load (load, folder):
     with open(os.path.join(folder,"force.dat"), 'w') as out_file:
         for line in force_line:
             out_file.write(line)
-
-tip_def = lambda tip_pos: np.sqrt(sum([pos**2 for pos in final_pos[-1,1:3]]))
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
