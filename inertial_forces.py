@@ -114,18 +114,52 @@ print(acc_vec)
 
 inertial_loads = beam.M_mat_full @ acc_vec
 
-def inertial_loads_fun (pos, beam, omega):
+# If there is any pitch: f = M @ R @ a
+
+pitch = np.deg2rad(90)
+
+def pitch_rot (pitch_rad, vec):
+    """Apply the pitch rotation to all the nodes.
+    
+    Input:
+        pitch_rad: pitch angle in radians
+
+        vec: 1D vector of size 2*3*N. N is the number of nodes
+
+    Result:
+        vec_rot: `vec`rotated
+    """
+    
+    # Evaluate the rotational matrix
+    pitch_mat_eval = pitch_mat(pitch_rad)
+
+    # Reshape the vector into an array (2*N, 3)
+    vec = np.reshape(vec,(-1,3))
+
+    vec_rot = np.zeros_like(vec)
+    for i in range(vec.shape[0]):
+        vec_rot_i = pitch_mat_eval @ vec[i,:]
+        vec_rot[i,:] = vec_rot_i
+
+    # Reshape to the original 1D shape 
+    vec_rot = vec_rot.flatten()
+
+    return vec_rot
+
+inertial_loads_pitch = beam.M_mat_full @ pitch_rot(pitch, acc_vec)
+
+def inertial_loads_fun (pos_vec, m_mat, omega, pitch_rad):
     """Function with all the needed steps to get the inertial loads for each of the nodes.
     """
-    pos_mat = np.reshape(corotobj.final_pos, (-1,6))
+    pos_mat = np.reshape(pos_vec, (-1,6))
 
-    transform = np.array([-omega**2, 0, -omega**2, 0, 0, 0])
+    pos2acc = np.array([-omega**2, 0, -omega**2, 0, 0, 0])
 
-    acc_mat = pos_mat * transform
+    acc_mat = pos_mat * pos2acc # Element wise multiplication
 
     acc_vec = acc_mat.flatten()
 
-    inertial_loads = beam.M_mat_full @ acc_vec
+    inertial_loads = m_mat @ pitch_rot(pitch_rad, acc_vec)
 
     return inertial_loads
 
