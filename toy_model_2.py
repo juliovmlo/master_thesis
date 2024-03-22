@@ -30,7 +30,7 @@ pitch_rad = np.deg2rad(pitch_deg)
 
 # Main loop options
 epsilon = 1e-3
-delta_u = epsilon + 1
+delta_u_rel = epsilon + 1
 iter_max = 20
 
 # Initialize loop
@@ -38,6 +38,7 @@ iter_max = 20
 # - Instantiate beam
 save_load([0], inputfolder, onlyy=True) # Creates a force file
 beam = ComplBeam(mainfile)
+original_nodel_loc = beam.nodeLocations
 
 # - Get the radius location of nodes
 r = beam.nodeLocations[:,2] # z-axis position
@@ -51,51 +52,70 @@ mainfile_dyn = os.path.join(inputfolder,f_model_json)
 beam_dynamic = ComplBeam(mainfile_dyn)
 M_mat_full = beam_dynamic.M_mat_full
 
-# - Init position
-force = r/r[-1]*100
-save_load(force,inputfolder,onlyy=True)
-beam = ComplBeam(mainfile)
-corotobj = CoRot(beam,numForceInc=4,max_iter=20)
-
 # - Init variables
-tip_init_pos = np.reshape(corotobj.final_pos, (-1,6))[-1,0:3]
-old_tip_def = 0 
-new_tip_def =  np.linalg.norm(tip_init_pos)
+pos_new = np.zeros(M_mat_full.shape[0]) # The initial pos are 0. This gives no inertial forces
+tip_init_pos=beam.nodeLocations[-1]
+old_tip_def = np.zeros(3)
+new_tip_def = np.zeros(3)
 tip_def_history = []
+delta_history = []
 iter = 0
 
-while abs(delta_u) > epsilon and iter < iter_max:
+while abs(delta_u_rel) > epsilon and iter < iter_max:
     # Update variables
+    pos_old = pos_new
     old_tip_def = new_tip_def
-    tip_def_history.append(old_tip_def)
+    tip_def_history.append(np.linalg.norm(old_tip_def))
     iter += 1
 
     # Calculate inertial loads
-    load = -inertial_loads_fun(corotobj.final_pos,root_di,M_mat_full,omega,pitch_rad)
+    load = -inertial_loads_fun(pos_old,M_mat_full,root_di,omega,pitch_rad)
     save_load(load,inputfolder)
 
     # Calculate deflections
     beam = ComplBeam(mainfile)
     corotobj = CoRot(beam,numForceInc=10,max_iter=20)
-    final_pos = np.reshape(corotobj.final_pos, (-1,6))
-    tip_pos = final_pos[-1,0:3]
-    new_tip_def = np.linalg.norm(tip_pos - tip_init_pos)
+    pos_new = np.reshape(corotobj.final_pos, (-1,6))
+    tip_pos = pos_new[-1,0:3]
+    new_tip_def = tip_pos - tip_init_pos
 
     # Calculate delta
-    delta_u = new_tip_def - old_tip_def
+    delta_u_rel = np.linalg.norm(new_tip_def - old_tip_def)/r[-1]
+    delta_history.append(delta_u_rel)
 
     print("--- Iteration finished ---")
     print(f"Iteration {iter}")
-    print(f"Delta = {delta_u:.5f} m")
-    print(f"Old tip def = {old_tip_def:.2f}")
-    print(f"Tip def: {new_tip_def:.2f} m")
+    print(f"Delta = {delta_u_rel:.5f} m")
+    print(f"Old tip def = {old_tip_def}")
+    print(f"Tip def: {new_tip_def} m")
 
-tip_def_history.append(new_tip_def)
+tip_def_history.append(np.linalg.norm(new_tip_def))
 print("---- Coupled ----")
 print(f"Num. iterations: {iter}")
-print(f"Tip def: {new_tip_def:.2f} m")
-print(f"History tip def:")
-print(f"\t{tip_def_history}")
 print("Operation conditions:")
 print(f"\tPitch angle: {pitch_deg} degrees")
 print(f"\tRotor speed: {rpm} RPM")
+print(f"Final tip def: {new_tip_def} m")
+print(f"History tip def. module:")
+print(f"\t{tip_def_history}")
+print(f"History delta ({epsilon = }):")
+print(f"\t{delta_history}")
+
+
+# Plot final result versus original state
+
+fig, axs = plt.subplots(2,1,figsize=(14,10),sharex=True, layout="tight")
+plot_title = ["r_x", "r_y"]
+ylabel = ["x", "y"]
+
+for i, ax in enumerate(axs):
+    ax.plot(original_nodel_loc[:,2], original_nodel_loc[:,i],marker='o', label=f"Original")
+    ax.plot(pos_new[:,2], pos_new[:,i],marker='o', label=f"Final")
+    ax.set_ylabel(ylabel[i])
+
+plt.grid()
+plt.xlabel("Span, z [m]")
+plt.legend()
+plt.show()
+
+

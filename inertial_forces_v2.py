@@ -118,7 +118,7 @@ def inertial_loads_fun (pos_vec_B2, m_mat, root_di, omega, pitch_rad):
 
 
 if __name__=="__main__":
-    ## Example
+    ## Example inertial forces
 
     # Import libraries
     import os
@@ -167,6 +167,9 @@ if __name__=="__main__":
 
     pitch_lst = np.deg2rad([0,45,90])
 
+
+    ## Plot different F for different pitch angles
+
     fig, axs = plt.subplots(6,1,figsize=(14,10),sharex=True, layout="tight")
     plot_title = ["Fx load", "Fy load", "Fz load", "Mx load", "My load", "Mz load"]
 
@@ -177,21 +180,17 @@ if __name__=="__main__":
         inertial_loads = np.reshape(inertial_loads, (-1, 6))
 
         for i, ax in enumerate(axs):
-            ax.plot(r+root_di/2, inertial_loads[:,i],marker='o', label=f"{np.rad2deg(pitch_rad)} deg")
+            ax.plot(r, inertial_loads[:,i],marker='o', label=f"{np.rad2deg(pitch_rad)} deg")
             ax.set_title(plot_title[i])
             ax.set_ylabel("Load") 
+            ax.grid(True)
 
     fig.suptitle(f"Inertial loads with \n{rpm} RPM and {np.rad2deg(pitch_lst)} degrees pitch")
     plt.xlabel("Span [m]")
     plt.legend()
-    # plt.savefig(f"figures\inertial_loads_{rpm:02d}_{np.rad2deg(pitch_rad):02.0f}.pdf", bbox_inches="tight")
+    deg_str = "-".join([f"{np.rad2deg(pitch_rad):02.0f}" for pitch_rad in pitch_lst])
+    pdf_name = f"figures\inertial_loads_{rpm:02d}rpm_{deg_str}deg.pdf"
+    # plt.savefig(pdf_name, bbox_inches="tight")
     plt.show()
 
-
-
-
-
-
-
-
-
+    # plt.savefig(f"figures\inertial_loads_{rpm:02d}_{np.rad2deg(pitch_rad):02.0f}.pdf", bbox_inches="tight")
