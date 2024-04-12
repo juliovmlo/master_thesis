@@ -47,7 +47,7 @@ def b1_to_b2 (vec, pitch_rad, inv=False):
 
 # Transformation matrix
 
-def pos_b1_to_b2 (vec: np.ndarray, pitch_rad: float, r_root: float, inv: bool=False)->np.ndarray:
+def pos_b1_to_b2 (vec: np.ndarray, pitch_rad: float, r_hub: float, inv: bool=False)->np.ndarray:
     """Apply transformation to go from the rotor frame of reference (B1) to the blade root
     FR. Applies pitch rotation and balde root translation. Used for position vector transformations.
 
@@ -72,10 +72,10 @@ def pos_b1_to_b2 (vec: np.ndarray, pitch_rad: float, r_root: float, inv: bool=Fa
     vec_rot = np.zeros_like(vec)
     for node_i in range(n_node):
         if not inv: # B1 to B2
-            vec_rot[node_i*2,:] = pitch_mat_eval @ vec[node_i*2,:] - np.array([0, 0, r_root])
+            vec_rot[node_i*2,:] = pitch_mat_eval @ vec[node_i*2,:] - np.array([0, 0, r_hub])
             vec_rot[node_i*2+1,:] = pitch_mat_eval @ vec[node_i*2+1,:]
         else: # B2 to B1
-            vec_rot[node_i*2,:] = np.transpose(pitch_mat_eval) @ vec[node_i*2,:] + np.array([0, 0, r_root])
+            vec_rot[node_i*2,:] = np.transpose(pitch_mat_eval) @ vec[node_i*2,:] + np.array([0, 0, r_hub])
             vec_rot[node_i*2+1,:] = np.transpose(pitch_mat_eval) @ vec[node_i*2+1,:]
 
     # Reshape to the original 1D shape 
@@ -85,13 +85,14 @@ def pos_b1_to_b2 (vec: np.ndarray, pitch_rad: float, r_root: float, inv: bool=Fa
 
 ## Inertial loads
 
-def inertial_loads_fun (pos_vec_B2, m_mat, root_di, omega, pitch_rad):
+def inertial_loads_fun (pos_vec_B2, m_mat, hub_di, omega, pitch_rad):
     """
     Function with all the needed steps to get the inertial loads for each of the nodes.
 
     Input:
         pos_vec: 1D vector with all the 6 DoF positions of all nodes in B1
         m_mat: mass matrix of the beam. Square matrix of the same size as pos_vec
+        hub_di: hub diameter in meters
         omega: angular velocity of the rotor
         pitch_rad: pitch angle of the blades
 
@@ -101,7 +102,7 @@ def inertial_loads_fun (pos_vec_B2, m_mat, root_di, omega, pitch_rad):
     
     """
     # Put the pos_vec in the rotor frame of reference, B1
-    pos_vec_B1 = pos_b1_to_b2(pos_vec_B2, pitch_rad, root_di/2, inv=True) # The inverse is used
+    pos_vec_B1 = pos_b1_to_b2(pos_vec_B2, pitch_rad, hub_di/2, inv=True) # The inverse is used
 
     pos_mat = np.reshape(pos_vec_B1, (-1,6))
 
@@ -113,6 +114,31 @@ def inertial_loads_fun (pos_vec_B2, m_mat, root_di, omega, pitch_rad):
 
     # The acc_vec is used in the blade rood frame of reference, B2
     inertial_loads = m_mat @ b1_to_b2(acc_vec, pitch_rad)
+
+    return inertial_loads
+
+def inertial_loads_test (m_mat, acc):
+    """The blade nodes are accelerated all the same acceleration in the blade root coordinate system, B2.
+    
+    Input:
+        m_mat: mass matrix of the beam. Square matrix
+        acc: acceleration vector of the 6 DoF
+    
+    Output:
+        inertial_loads: 1D array of the same size as m_mat with the applyed load for
+        each node and DoF
+        acc_vec: 
+    """
+
+    acc_vec = np.zeros(m_mat.shape[0])
+    
+    acc_mat = np.reshape(acc_vec, (-1, 6))
+
+    acc_mat[:,:] = acc
+
+    acc_vec = acc_mat.flatten()
+
+    inertial_loads = m_mat @ acc_vec
 
     return inertial_loads
 
@@ -145,7 +171,7 @@ if __name__=="__main__":
     save_load(load,inputfolder, onlyy=True)
     beam = ComplBeam(mainfile) # The beam has to be reinstanciated to load the loads
 
-    # For non dynamic calculations the mass matrix is not calculated
+    # For non dynamic calculations, the mass matrix is not calculated
     f_model_json = "iea15mw_dynamic.json"
     inputfolder = os.path.join(os.getcwd(),'iea15mw')
     mainfile = os.path.join(inputfolder,f_model_json)
@@ -194,3 +220,53 @@ if __name__=="__main__":
     plt.show()
 
     # plt.savefig(f"figures\inertial_loads_{rpm:02d}_{np.rad2deg(pitch_rad):02.0f}.pdf", bbox_inches="tight")
+
+    ## First test
+
+    fig1, axs1 = plt.subplots(6,1,figsize=(14,10),sharex=True, layout="tight")
+    plot_title1 = ["Fx load", "Fy load", "Fz load", "Mx load", "My load", "Mz load"]
+
+    acc_lst = [[1,0,0,0,0,0],
+               [0,1,0,0,0,0],
+               [0,0,1,0,0,0],
+    ]
+
+    for acc in acc_lst:
+
+        inertial_loads = inertial_loads_test(beam.M_mat_full,acc)
+
+        inertial_loads = np.reshape(inertial_loads, (-1, 6))
+
+        for i, ax in enumerate(axs1):
+            ax.plot(r, inertial_loads[:,i],marker='o', label=f"{acc}")
+            ax.set_title(plot_title1[i])
+            ax.set_ylabel("Load") 
+            ax.grid(True)
+
+    fig1.suptitle(f"Inertial loads for unitary acceleration in x, y and z-axis in all nodes")
+    plt.xlabel("Span [m]")
+    plt.legend()
+    plt.show()
+
+
+    ## Acc. in x-axis
+
+    fig, axs = plt.subplots(3,1,figsize=(14,10),sharex=True, layout="tight")
+    plot_title = ["Fx load", "Fy load", "Fz load"]
+    
+    acc = [1,0,0,0,0,0]
+
+    inertial_loads = inertial_loads_test(beam.M_mat_full,acc)
+
+    inertial_loads = np.reshape(inertial_loads, (-1, 6))
+
+    for i, ax in enumerate(axs):
+            ax.plot(r, inertial_loads[:,i], marker='o', label=f"{acc}")
+            ax.set_title(plot_title[i])
+            ax.set_ylabel("Load") 
+            ax.grid(True)
+
+    fig.suptitle(f"Inertial loads for unitary acceleration in x-axis in all nodes")
+    plt.xlabel("Span [m]")
+    plt.legend()
+    plt.show()
