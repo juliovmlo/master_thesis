@@ -83,6 +83,11 @@ def pos_b1_to_b2 (vec: np.ndarray, pitch_rad: float, r_hub: float, inv: bool=Fal
 
     return vec_rot
 
+def pos_b2_to_b1 (vec: np.ndarray, pitch_rad: float, r_hub: float)->np.ndarray:
+    """Applies the inverse of `pos_b1_to_b2`.
+    """
+    return pos_b1_to_b2 (vec, pitch_rad, r_hub, inv=True)
+
 ## Inertial loads
 
 def inertial_loads_fun (pos_vec_B2, m_mat, hub_di, omega, pitch_rad):
@@ -90,7 +95,7 @@ def inertial_loads_fun (pos_vec_B2, m_mat, hub_di, omega, pitch_rad):
     Function with all the needed steps to get the inertial loads for each of the nodes.
 
     Input:
-        pos_vec: 1D vector with all the 6 DoF positions of all nodes in B1
+        pos_vec_B2: 1D vector with all the 6 DoF positions of all nodes in B2
         m_mat: mass matrix of the beam. Square matrix of the same size as pos_vec
         hub_di: hub diameter in meters
         omega: angular velocity of the rotor
@@ -102,7 +107,8 @@ def inertial_loads_fun (pos_vec_B2, m_mat, hub_di, omega, pitch_rad):
     
     """
     # Put the pos_vec in the rotor frame of reference, B1
-    pos_vec_B1 = pos_b1_to_b2(pos_vec_B2, pitch_rad, hub_di/2, inv=True) # The inverse is used
+    pos_vec_B1 = pos_b1_to_b2(pos_vec_B2, pitch_rad, hub_di/2, inv=True) # The inverse is used!!
+    # pos_vec_B1 = pos_b2_to_b1(pos_vec_B2, pitch_rad, hub_di/2)
 
     pos_mat = np.reshape(pos_vec_B1, (-1,6))
 
@@ -141,6 +147,137 @@ def inertial_loads_test (m_mat, acc):
     inertial_loads = m_mat @ acc_vec
 
     return inertial_loads
+
+def inertial_loads_fun_v02 (pos_vec, cg_offset_vec, m_mat, omega):
+    """
+    Function with certain simplifications: no pitch, no hub_r
+    
+    Calculates the inertial loads in the node locations.
+
+    Input:
+        pos_vec_B2: 1D vector with all the 6 DoF positions of all nodes in B2. Length N*6
+        cg_offset_vec: Nx3 matrix with the position of the CoG with respect to the node position in B2
+        m_mat: mass matrix of the beam. Square matrix of the same size as pos_vec
+        omega: angular velocity of the rotor
+
+    Return:
+        inertial_loads: 1D array of the same size as pos_vec_B2 with the applyed load for
+        each node and DoF
+
+    """
+    ## Obtaining CoG positions
+    pos_cg = pos_vec.copy()
+    pos_cg[:,:3] += cg_offset_vec
+
+    ## Obataining CoG accelerations
+    pos2acc = np.array([-omega**2, 0, -omega**2, 0, 0, 0])
+
+    acc_mat = pos_cg * pos2acc
+
+    acc_vec = acc_mat.flatten()
+
+    ## Obataining inertial loads in CoG
+    inertial_loads_cg = m_mat @ acc_vec
+
+    ## Translating loads to node locations
+    # inertial_loads_cg = np.reshape(inertial_loads_cg, (-1,6))
+
+    # force = inertial_loads_cg[:,:3]
+    # moment = inertial_loads_cg[:,3:]
+    # # force, moment = np.split(inertial_loads_cg,[3],axis=1)
+
+    # # Translating the moments to the node positions
+    # for node_i in range(pos_vec.shape[0]):
+    #     moment[node_i] += np.cross(cg_offset_vec[node_i,:],force[node_i,:])
+
+    # inertial_loads = np.concatenate((force,moment),axis=1)
+
+    # inertial_loads = inertial_loads.flatten()
+
+    # return inertial_loads
+
+    return loads_cg2node(inertial_loads_cg, cg_offset_vec)
+
+
+def inertial_loads_fun_v03 (pos_vec_B2, cg_offset_mat, m_mat, hub_di, omega, pitch_rad):
+    """
+    Function with all the needed steps to get the inertial loads for each of the nodes.
+
+    Input:
+        pos_vec_B2: 1D vector with all the 6 DoF positions of all nodes in B2. Length N*6
+        cg_offset_vec: Nx3 matrix with the position of the CoG with respect to the node position in B2
+        m_mat: mass matrix of the beam. Square matrix of the same size as pos_vec
+        hub_di: hub diameter in meters
+        omega: angular velocity of the rotor
+        pitch_rad: pitch angle of the blades
+
+    Return:
+        inertial_loads: 1D array of the same size as pos_vec_B2 with the applyed load for
+        each node and DoF
+    
+    """
+
+    ## Obtaining the CoG positions in rotor base (B1)
+    # First in blade root base (B2)
+    pos_mat_B2 = np.reshape(pos_vec_B2,(-1,6))
+    pos_cg_B2 = pos_mat_B2.copy()
+    pos_cg_B2[:,:3] += cg_offset_mat
+
+    # Put the pos_vec in the rotor frame of reference, B1
+    pos_cg_B1 = pos_b1_to_b2(pos_cg_B2.flatten(), pitch_rad, hub_di/2, inv=True) # The inverse is used!!
+
+    ## Obataining CoG accelerations
+    pos_cg_mat = np.reshape(pos_cg_B1, (-1,6))
+
+    pos2acc = np.array([-omega**2, 0, -omega**2, 0, 0, 0])
+
+    acc_mat = pos_cg_mat * pos2acc
+
+    acc_vec = acc_mat.flatten()
+
+    ## Obataining inertial loads in CoG
+
+    # The acc_vec is used in the blade rood frame of reference, B2
+    inertial_loads_cg = m_mat @ b1_to_b2(acc_vec, pitch_rad)
+
+    inertial_loads_cg = np.reshape(inertial_loads_cg, (-1,6))
+
+    ## Translating loads to node locations
+
+    force = inertial_loads_cg[:,:3]
+    moment = inertial_loads_cg[:,3:]
+    # force, moment = np.split(inertial_loads_cg,[3],axis=1)
+    # Translating the moments to the node positions using offset vectors
+    for node_i in range(pos_vec_B2.shape[0]):
+        moment[node_i] += np.cross(cg_offset_mat[node_i,:],force[node_i,:])
+
+    inertial_loads = np.concatenate((force,moment),axis=1)
+
+    inertial_loads = inertial_loads.flatten()
+
+    return inertial_loads
+
+def loads_cg2node (load_vec, cg_offset):
+    """Calculates the equivalent loads in the nodes positions from the CoG.
+
+    Input:
+        load_vec: 1D vector of length N*6
+        cg_offset: 1D vector of length N*3 with the offset of the CoG for each node
+    """
+    loads = np.reshape(load_vec,(-1,6))
+    cg_offset = np.reshape(cg_offset,(-1,3))
+
+    moments_cg = loads[:,3:]
+
+    moments_node = np.cross(-cg_offset,moments_cg)
+
+    # Subtitude the new moments in the load matrix
+    loads[:,3:] = moments_node
+
+    return loads.flatten()
+
+
+
 
 
 if __name__=="__main__":
