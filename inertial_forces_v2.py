@@ -196,7 +196,9 @@ def inertial_loads_fun_v02 (pos_vec, cg_offset_vec, m_mat, omega):
 
     # return inertial_loads
 
-    return loads_cg2node(inertial_loads_cg, cg_offset_vec)
+    inertial_loads = loads_cg2node(inertial_loads_cg, cg_offset_vec)
+
+    return inertial_loads
 
 
 def inertial_loads_fun_v03 (pos_vec_B2, cg_offset_mat, m_mat, hub_di, omega, pitch_rad):
@@ -276,6 +278,30 @@ def loads_cg2node (load_vec, cg_offset):
 
     return loads.flatten()
 
+def loads_in_global_cg(load_vec, node_pos,cg_pos, verbose=False):
+    """
+    Calculates the loads in the global CoG. 
+    """
+    load_vec = np.reshape(load_vec,(-1,6))
+    node_pos = np.reshape(node_pos,(-1,6))
+    cg_pos = np.reshape(cg_pos,(-1,3))
+
+    force, moment = np.split(load_vec,[3],axis=1)
+    force_cg = np.sum(force, axis=0)
+
+    r_globcg2node = node_pos[:,:3] - cg_pos
+    if verbose: print(f'{r_globcg2node =}')
+
+    moment_cg = np.sum(moment,axis=0)
+    for node_i in range(node_pos.shape[0]):
+        moment_cg += np.cross(r_globcg2node[node_i],force[node_i])
+
+    if verbose:
+        print(f'{force_cg =}')
+        print(f'{r_globcg2node =}')
+        print(f'{moment_cg =}')
+
+    return force_cg, moment_cg
 
 
 
