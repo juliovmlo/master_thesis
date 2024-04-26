@@ -259,6 +259,49 @@ def inertial_loads_fun_v03 (pos_vec_B2, cg_offset_mat, m_mat, hub_di, omega, pit
 
     return inertial_loads
 
+def inertial_loads_fun_v04 (pos_vec_B2, cg_offset_mat, m_mat, r_hub, omega, pitch_rad):
+    """
+    Function with all the needed steps to get the inertial loads for each of the nodes.
+
+    Input:
+        pos_vec_B2: 1D vector with all the 6 DoF positions of all nodes in B2. Length N*6
+        cg_offset_vec: Nx3 matrix with the position of the CoG with respect to the node position in B2
+        m_mat: mass matrix of the beam. Square matrix of the same size as pos_vec
+        hub_di: hub diameter in meters
+        omega: angular velocity of the rotor
+        pitch_rad: pitch angle of the blades
+
+    Return:
+        inertial_loads: 1D array of the same size as pos_vec_B2 with the applyed load for
+        each node and DoF
+    
+    """
+
+    ## Obtaining the CoG positions in rotor base (B1)
+    # First in blade root base (B2)
+    pos_mat_B2 = np.reshape(pos_vec_B2,(-1,6))
+    pos_cg_B2 = pos_mat_B2.copy()
+    pos_cg_B2[:,:3] += cg_offset_mat
+
+    # Put the pos_vec in the rotor frame of reference, B1
+    pos_cg_B1 = pos_b1_to_b2(pos_cg_B2.flatten(), pitch_rad, r_hub, inv=True) # The inverse is used!!
+
+    ## Obataining CoG accelerations
+    pos_cg_mat = np.reshape(pos_cg_B1, (-1,6))
+
+    pos2acc = np.array([-omega**2, 0, -omega**2, 0, 0, 0])
+
+    acc_mat = pos_cg_mat * pos2acc
+
+    acc_vec = acc_mat.flatten()
+
+    ## Obataining inertial loads in nodes
+
+    # The acc_vec is used in the blade rood frame of reference, B2
+    inertial_loads = m_mat @ b1_to_b2(acc_vec, pitch_rad)
+
+    return inertial_loads
+
 def loads_cg2node (load_vec, cg_offset):
     """Calculates the equivalent loads in the nodes positions from the CoG.
 
@@ -269,18 +312,18 @@ def loads_cg2node (load_vec, cg_offset):
     loads = np.reshape(load_vec,(-1,6))
     cg_offset = np.reshape(cg_offset,(-1,3))
 
-    moments_cg = loads[:,3:]
+    force, moment_cg = np.split(loads,[3],axis=1)
+    moment = moment_cg.copy()
+    for node_i in range(loads.shape[0]):
+        moment[node_i] += np.cross(cg_offset[node_i,:],force[node_i,:])
 
-    moments_node = np.cross(-cg_offset,moments_cg)
-
-    # Subtitude the new moments in the load matrix
-    loads[:,3:] = moments_node
+    loads = np.concatenate((force,moment),axis=1)
 
     return loads.flatten()
 
 def loads_in_global_cg(load_vec, node_pos,cg_pos, verbose=False):
     """
-    Calculates the loads in the global CoG. 
+    Calculates the loads in the global CoG given its position.
     """
     load_vec = np.reshape(load_vec,(-1,6))
     node_pos = np.reshape(node_pos,(-1,6))

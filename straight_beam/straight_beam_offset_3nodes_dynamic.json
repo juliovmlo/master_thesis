@@ -1,0 +1,10 @@
+{
+"Properties": "property_file_straight_beam_offset_3nodes.dat",
+"c2_pos": "c2_pos_3nodes.dat",
+"Boundary": "boundary.dat",
+"Analysistype":"dynamic",
+"int_type":"gauss",
+"Npmax": 5 ,
+"Nip": 6
+}
+    
