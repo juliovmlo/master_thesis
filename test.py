@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from inertial_forces_v2 import pitch_mat, b2_to_b1
+from inertial_forces import pitch_mat, b2_to_b1
 
 class test_pitch_mat (unittest.TestCase):
     def test_pitch_mat(self):

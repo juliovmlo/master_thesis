@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from utils import save_load
-from inertial_forces_v2 import inertial_loads_fun
+from inertial_forces import inertial_loads_fun
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
