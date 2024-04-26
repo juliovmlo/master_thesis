@@ -23,3 +23,31 @@ def save_load (load, folder, onlyy = False):
     with open(os.path.join(folder,"force.dat"), 'w') as out_file:
         for line in force_line:
             out_file.write(line)
+
+from beam_corot.ComplBeam import ComplBeam
+
+def c2_to_node(beam: ComplBeam, loads_c2):
+    """
+    Moves the loads from the half chord centre to the node centre (elastic centre) position.
+
+    Input:
+        beam: instance of the class ComplBeam
+        loads_c2: array of loads Nx6 in C2 in the blade root axis. Forces and moments
+    
+    Output:
+        loads_n: array of loads Nx6 in the nodes in the blade root axis. Forces and moments
+    """
+    # Nodes are located in the elastic centre
+    c2_pos = beam.c2Input[:, 1:4] # Half chord position in blade root FR
+    node_pos = beam.nodeLocations # Elastic centre in blade root FR
+    r_node2c2 = c2_pos - node_pos
+
+    f_c2, m_c2 = np.split(loads_c2, [3], axis = 1)
+    f_n = f_c2
+    m_n = m_c2.copy()
+    for node_i in range(loads_c2.shape[0]):
+        m_n += np.cross(r_node2c2[node_i,:],f_c2[node_i,:])
+
+    loads_n = np.concatenate((f_n,m_n),axis=1)
+
+    return loads_n

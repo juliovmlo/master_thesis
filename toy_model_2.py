@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from utils import save_load
-from inertial_forces_v2 import inertial_loads_fun
+from inertial_forces import inertial_loads_fun
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
@@ -20,7 +20,7 @@ inputfolder = os.path.join(os.getcwd(),'iea15mw')
 mainfile = os.path.join(inputfolder,f_model_json)
 
 # Extra geometry info
-root_di = 5.2 # Root diameter [m]
+hub_di = 7.94 # Hub diameter [m]
 
 # Operations info
 rpm = 7
@@ -69,7 +69,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     iter += 1
 
     # Calculate inertial loads
-    load = -inertial_loads_fun(pos_old,M_mat_full,root_di,omega,pitch_rad)
+    load = -inertial_loads_fun(pos_old,M_mat_full,hub_di,omega,pitch_rad)
     save_load(load,inputfolder)
 
     # Calculate deflections
