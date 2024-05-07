@@ -13,7 +13,7 @@ from utils import save_load
 from inertial_forces import inertial_loads_fun
 
 # Model input json file name
-f_model_json = "straight_beam_static.json"
+f_model_json = "straight_beam_no_offset_static.json"
 
 # Input files folder
 inputfolder = os.path.join(os.getcwd(),'straight_beam')
@@ -33,7 +33,7 @@ r = beam.nodeLocations[:,2] # z-axis position
 
 # - Get the mass matrix
 # For non dynamic calculations the mass matrix is not calculated
-f_model_json = "straight_beam_dynamic.json"
+f_model_json = "straight_beam_no_offset_dynamic.json"
 mainfile_dyn = os.path.join(inputfolder,f_model_json)
 
 # Calculate mass matrix

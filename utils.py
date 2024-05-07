@@ -24,6 +24,24 @@ def save_load (load, folder, onlyy = False):
         for line in force_line:
             out_file.write(line)
 
+def save_distributed_load (load, folder):
+    """Save a distributed load"""
+    force_line = []
+    force_line += "# Node_num    Fx      Fy      Fz      Mx      My      Mz \n"
+
+    load = np.reshape(load,(-1,6))
+    for node_i in range(load.shape[0]):
+        load_str = [f"{f_node:>15.6e}" for f_node in load[node_i]]
+        force_line += f"{node_i+1:4d} {' '.join(load_str)}\n"
+
+    with open(os.path.join(folder,"distributed_loads.dat"), 'w') as out_file:
+        for line in force_line:
+            out_file.write(line)
+
+
+def input_data (folder):
+    """Function where the input data is handled."""
+
 from beam_corot.ComplBeam import ComplBeam
 
 def c2_to_node(beam: ComplBeam, loads_c2):

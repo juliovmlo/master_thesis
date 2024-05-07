@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from utils import save_load
-from inertial_forces import inertial_loads_fun
+from inertial_forces import inertial_loads_fun, inertial_loads_fun_v03
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
@@ -70,6 +70,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
 
     # Calculate inertial loads
     load = -inertial_loads_fun(pos_old,M_mat_full,hub_di,omega,pitch_rad)
+    # load = -inertial_loads_fun_v03(pos_old,cg_offset,M_mat_full,hub_di,omega,pitch_rad)
     save_load(load,inputfolder)
 
     # Calculate deflections
