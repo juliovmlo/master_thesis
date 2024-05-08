@@ -10,7 +10,8 @@ from matplotlib import pyplot as plt
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from utils import save_load
-from inertial_forces import inertial_loads_fun, inertial_loads_fun_v03
+from inertial_forces import inertial_loads_fun, inertial_loads_fun_v04
+from cg_offset import get_cg_offset
 
 # Model input json file name
 f_model_json = "iea15mw_toy_model.json"
@@ -39,6 +40,7 @@ iter_max = 20
 save_load([0], inputfolder, onlyy=True) # Creates a force file
 beam = ComplBeam(mainfile)
 original_nodel_loc = beam.nodeLocations
+cg_offset = get_cg_offset(beam)
 
 # - Get the radius location of nodes
 r = beam.nodeLocations[:,2] # z-axis position
@@ -69,8 +71,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     iter += 1
 
     # Calculate inertial loads
-    load = -inertial_loads_fun(pos_old,M_mat_full,hub_di,omega,pitch_rad)
-    # load = -inertial_loads_fun_v03(pos_old,cg_offset,M_mat_full,hub_di,omega,pitch_rad)
+    load = -inertial_loads_fun_v04(pos_old,cg_offset,M_mat_full,hub_di,omega,pitch_rad)
     save_load(load,inputfolder)
 
     # Calculate deflections

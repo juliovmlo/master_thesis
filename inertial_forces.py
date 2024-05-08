@@ -250,7 +250,7 @@ def inertial_loads_fun_v03 (pos_vec_B2, cg_offset_mat, m_mat, hub_di, omega, pit
     moment = inertial_loads_cg[:,3:]
     # force, moment = np.split(inertial_loads_cg,[3],axis=1)
     # Translating the moments to the node positions using offset vectors
-    for node_i in range(pos_vec_B2.shape[0]):
+    for node_i in range(pos_mat_B2.shape[0]):
         moment[node_i] += np.cross(cg_offset_mat[node_i,:],force[node_i,:])
 
     inertial_loads = np.concatenate((force,moment),axis=1)

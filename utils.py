@@ -69,3 +69,4 @@ def c2_to_node(beam: ComplBeam, loads_c2):
     loads_n = np.concatenate((f_n,m_n),axis=1)
 
     return loads_n
+
