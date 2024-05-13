@@ -63,18 +63,37 @@ class ComplBeam:
         # Element stiffness and mass matrix
         self.calculateElementMatrixComplimentary()
         # Interpolation function for displacements
-        if self.analysistype == "dynamic":
-            if self.mass_matrix_type == 'Compl':
-                self.calcDisplacementFieldCompl()
-                self.massmatrixcomplementary()
-                print('Compl Mass Matrix')
-            elif self.mass_matrix_type == 'Timo':
-                self.massmatrixoriginal()
-                print('Timo Mass Matrix')
-            else:
-                print('Wrong mass matrix calculation type input given')
-                self.massmatrixoriginal()
-                print('Timo Mass Matrix is selected as default')
+
+        ## Edit: Julio Vázquez M.-L.
+        # Delete begin
+        # if self.analysistype == "dynamic":
+        #     if self.mass_matrix_type == 'Compl':
+        #         self.calcDisplacementFieldCompl()
+        #         self.massmatrixcomplementary()
+        #         print('Compl Mass Matrix')
+        #     elif self.mass_matrix_type == 'Timo':
+        #         self.massmatrixoriginal()
+        #         print('Timo Mass Matrix')
+        #     else:
+        #         print('Wrong mass matrix calculation type input given')
+        #         self.massmatrixoriginal()
+        #         print('Timo Mass Matrix is selected as default')
+        # Delete end
+        # New begin
+        if self.mass_matrix_type == 'Compl':
+            self.calcDisplacementFieldCompl()
+            self.massmatrixcomplementary()
+            print('Compl Mass Matrix')
+        elif self.mass_matrix_type == 'Timo':
+            self.massmatrixoriginal()
+            print('Timo Mass Matrix')
+        else:
+            print('Wrong mass matrix calculation type input given')
+            self.massmatrixoriginal()
+            print('Timo Mass Matrix is selected as default')
+        # New end
+        ## Edit end
+
         # Global stiffness and mass matrix
         self.calculateGeneralMatrix()
 

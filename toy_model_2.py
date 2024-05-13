@@ -118,6 +118,7 @@ for i, ax in enumerate(axs):
 plt.grid()
 plt.xlabel("Span, z [m]")
 plt.legend()
-plt.show()
+# plt.show()
+plt.savefig("figures/toy_model_2_results.png")
 
 
