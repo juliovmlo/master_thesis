@@ -20,7 +20,7 @@ def save_load (load, folder, onlyy = False):
         for node_i,f_node in enumerate(load):
             force_line +=  f"{node_i+1:4d}  0.0  {f_node:>15.6e}  0.0  0.0  0.0  0.0 \n"
 
-    with open(os.path.join(folder,"force.dat"), 'w') as out_file:
+    with open(os.path.join(folder,"load.dat"), 'w') as out_file:
         for line in force_line:
             out_file.write(line)
 
@@ -34,9 +34,13 @@ def save_distributed_load (load, folder):
         load_str = [f"{f_node:>15.6e}" for f_node in load[node_i]]
         force_line += f"{node_i+1:4d} {' '.join(load_str)}\n"
 
-    with open(os.path.join(folder,"distributed_loads.dat"), 'w') as out_file:
+    with open(os.path.join(folder,"load_distr.dat"), 'w') as out_file:
         for line in force_line:
             out_file.write(line)
+
+def save_deflections():
+    # Find new position of c2 and twist. Then create the c2_pos file
+    pass
 
 
 def input_data (folder):

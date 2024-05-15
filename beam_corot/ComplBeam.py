@@ -64,38 +64,36 @@ class ComplBeam:
         self.calculateElementMatrixComplimentary()
         # Interpolation function for displacements
 
+        
+
+
         ## Edit: Julio Vázquez M.-L.
-        # Delete begin
-        # if self.analysistype == "dynamic":
-        #     if self.mass_matrix_type == 'Compl':
-        #         self.calcDisplacementFieldCompl()
-        #         self.massmatrixcomplementary()
-        #         print('Compl Mass Matrix')
-        #     elif self.mass_matrix_type == 'Timo':
-        #         self.massmatrixoriginal()
-        #         print('Timo Mass Matrix')
-        #     else:
-        #         print('Wrong mass matrix calculation type input given')
-        #         self.massmatrixoriginal()
-        #         print('Timo Mass Matrix is selected as default')
-        # Delete end
+        # In the section where the mass matrix is calculated, the analysis type flag is set to "dynamic"
         # New begin
-        if self.mass_matrix_type == 'Compl':
-            self.calcDisplacementFieldCompl()
-            self.massmatrixcomplementary()
-            print('Compl Mass Matrix')
-        elif self.mass_matrix_type == 'Timo':
-            self.massmatrixoriginal()
-            print('Timo Mass Matrix')
-        else:
-            print('Wrong mass matrix calculation type input given')
-            self.massmatrixoriginal()
-            print('Timo Mass Matrix is selected as default')
+        self.analysistype = "dynamic"
         # New end
         ## Edit end
 
+        if self.analysistype == "dynamic":
+            if self.mass_matrix_type == 'Compl':
+                self.calcDisplacementFieldCompl()
+                self.massmatrixcomplementary()
+                print('Compl Mass Matrix')
+            elif self.mass_matrix_type == 'Timo':
+                self.massmatrixoriginal()
+                print('Timo Mass Matrix')
+            else:
+                print('Wrong mass matrix calculation type input given')
+                self.massmatrixoriginal()
+                print('Timo Mass Matrix is selected as default')
+
         # Global stiffness and mass matrix
         self.calculateGeneralMatrix()
+
+        ## Edit: Julio Vázquez M.-L.
+        # New begin
+        self.analysistype = "static"
+        # Edit end 
 
         ### STATIC LOADS ###
         # Initialize

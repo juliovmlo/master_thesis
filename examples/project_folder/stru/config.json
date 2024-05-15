@@ -4,7 +4,6 @@
     "Boundary": "boundary.dat",
     "Analysistype": "static",
     "static_load": "load.dat",
-    "static_load_distributed": "load_distr.dat",
     "int_type": "gauss",
     "Npmax": 5,
     "Nip": 6
