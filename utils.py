@@ -38,9 +38,7 @@ def save_distributed_load (load, folder):
         for line in force_line:
             out_file.write(line)
 
-def save_deflections():
-    # Find new position of c2 and twist. Then create the c2_pos file
-    pass
+
 
 
 def input_data (folder):
@@ -74,3 +72,9 @@ def c2_to_node(beam: ComplBeam, loads_c2):
 
     return loads_n
 
+def save_deflections(c2_pos, folder: str):
+
+    header = ";1/2 chord locations of the cross-sections\n; X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.]"
+    
+    with open(os.path.join(folder,"c2_pos.dat"), 'w') as out_file:
+        np.savetxt(out_file,c2_pos,header=header,comments=';')

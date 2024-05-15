@@ -4,7 +4,7 @@ import numpy as np
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from pybevc import PyBEVC
-from utils import save_load, save_distributed_load, c2_to_node
+from utils import save_load, save_distributed_load, c2_to_node, save_deflections
 from inertial_forces import inertial_loads_fun_v04
 from cg_offset import get_cg_offset
 from input import createProjectFolder
@@ -121,6 +121,17 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     new_tip_def = tip_pos - tip_init_pos
 
     # Save deflections
+    # Find new position of c2 and twist. Then create the c2_pos file
+    defl = np.reshape(beam.defl_full,(-1,6)) #
+    c2_pos_old = beam.c2Input[:,1:4]
+    twist_old = beam.c2Input[:,-1]
+    c2_pos_new = defl[:,:3] + c2_pos_old
+    twist_new = twist_old + defl[:,-1] # The rotation around z-axis changes the twist
+
+    c2_file_new = np.column_stack((c2_pos_new,twist_new))
+
+    save_deflections(c2_file_new,inputfolder_aero)
+    bevc.from_c2_file(os.path.join(inputfolder_aero,'c2_pos.dat'))
 
     # Calculate delta
     delta_u_rel = np.linalg.norm(new_tip_def - old_tip_def)/bevc.R
