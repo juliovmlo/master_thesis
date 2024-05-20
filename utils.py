@@ -38,11 +38,12 @@ def save_distributed_load (load, folder):
         for line in force_line:
             out_file.write(line)
 
+def save_deflections(c2_pos, folder: str):
 
-
-
-def input_data (folder):
-    """Function where the input data is handled."""
+    header = ";1/2 chord locations of the cross-sections\n; X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.]"
+    
+    with open(os.path.join(folder,"c2_pos.dat"), 'w') as out_file:
+        np.savetxt(out_file,c2_pos,header=header,comments=';')
 
 from beam_corot.ComplBeam import ComplBeam
 
@@ -72,9 +73,32 @@ def c2_to_node(beam: ComplBeam, loads_c2):
 
     return loads_n
 
-def save_deflections(c2_pos, folder: str):
+from beam_corot.ComplBeam import ComplBeam
+from beam_corot.utils import subfunctions as subf
 
-    header = ";1/2 chord locations of the cross-sections\n; X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.]"
-    
-    with open(os.path.join(folder,"c2_pos.dat"), 'w') as out_file:
-        np.savetxt(out_file,c2_pos,header=header,comments=';')
+def get_cg_offset(beam: ComplBeam)->np.ndarray:
+    """Gives back the centre of gravity offset from the elastic centre (node) in the blade root coordinate system.
+
+    Input:
+        beam: instance of the class ComplBeam
+
+    Output:
+        cg_offset: Nx3 matrix with the centre of gravity offset from the elastic centre (node) in the blade root coordinate system.
+    """
+    # Getting centre of gravity and elastic centre in the half chord nodes. The spline and
+    # variables used in ComplBeam are used.
+    cg_s = np.zeros((beam.numNode,3))
+    cg_s[:,0],cg_s[:,1] = beam.struturalPropertyInterploator['x_cg'](beam.scurve),beam.struturalPropertyInterploator['y_cg'](beam.scurve)
+    ec_s = np.zeros_like(cg_s)
+    ec_s[:,0],ec_s[:,1] = beam.struturalPropertyInterploator['x_e'](beam.scurve),beam.struturalPropertyInterploator['y_e'](beam.scurve)
+    twist_deg = beam.c2Input[:, 4]
+    # Getting the offset in the nodes coordinate system
+    ec_to_cg = cg_s - ec_s
+
+    # Move the offset from element coordinates to blade root coordinates. Just rotate them
+    # The tools used in ComplBeam are used. The tanget of the spline and the twist are used.
+    cg_offset = np.zeros_like(cg_s)
+    for i in range(beam.numNode):
+        cg_offset[i,:] = subf.get_tsb(beam.v1, beam.scurveTangent[i, :], np.deg2rad(twist_deg[i])) @ ec_to_cg[i, :]
+
+    return cg_offset

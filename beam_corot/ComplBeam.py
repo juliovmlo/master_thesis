@@ -93,7 +93,7 @@ class ComplBeam:
         ## Edit: Julio Vázquez M.-L.
         # New begin
         self.analysistype = "static"
-        # Edit end 
+        # New end 
 
         ### STATIC LOADS ###
         # Initialize

@@ -4,20 +4,24 @@ import numpy as np
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from pybevc import PyBEVC
-from utils import save_load, save_distributed_load, c2_to_node, save_deflections
 from inertial_forces import inertial_loads_fun_v04
-from cg_offset import get_cg_offset
 from input import createProjectFolder
+from utils import (
+    save_load,save_distributed_load,
+    c2_to_node,
+    save_deflections,
+    get_cg_offset,
+)
 
 #%%
 # Operations info
-omega_rpm = 7 # [RPM]
+omega_rpm = 7.46 # [RPM]
 omega = omega_rpm*np.pi/30 # [rad/s]
 pitch_deg = 0 # [deg]
 pitch_rad = np.deg2rad(pitch_deg) # [rad]
 
 # Climate conditions
-U0 = 8 # [m/s]
+U0 = 10.5 # [m/s]
 
 # Coupling parameters
 epsilon = 1e-3
@@ -28,12 +32,8 @@ iter_max = 20
 # Folders and file names
 inputfolder = 'examples/input_iea15mw'
 projectfolder = 'examples/project_folder'
-c2_file = 'c2_pos.dat'
-st_file = 'IEA_15MW_RWT_Blade_st_FPM.st'
-ae_file = 'IEA_15MW_RWT_ae.dat'
-pc_file = 'IEA_15MW_RWT_pc.dat'
 
-createProjectFolder(inputfolder,projectfolder,c2_file,st_file,ae_file,pc_file)
+createProjectFolder(inputfolder,projectfolder)
 
 #%% Initializing the structural model
 # Model input json file  name
@@ -44,9 +44,8 @@ inputfolder_stru = os.path.join(os.getcwd(),'examples/project_folder/stru')
 mainfile_beam = os.path.join(inputfolder_stru,f_model_json)
 
 # Initialize beam model
-save_load([0], inputfolder_stru, onlyy=True) # Creates a force file
 beam = ComplBeam(mainfile_beam)
-cg_offset = get_cg_offset(beam)
+cg_offset = get_cg_offset(beam) # TODO: update it in the loop
 
 #%% Initializing the aerodynamic model
 bevc = PyBEVC()
@@ -122,7 +121,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
 
     # Save deflections
     # Find new position of c2 and twist. Then create the c2_pos file
-    defl = np.reshape(beam.defl_full,(-1,6)) #
+    defl = np.reshape(beam.defl_full,(-1,6)) # I'm using 'beam' deflections and not CoRot's
     c2_pos_old = beam.c2Input[:,1:4]
     twist_old = beam.c2Input[:,-1]
     c2_pos_new = defl[:,:3] + c2_pos_old

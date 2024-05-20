@@ -177,9 +177,6 @@ def loads_in_global_cg(load_vec, node_pos,cg_pos, verbose=False):
 
     return force_cg, moment_cg
 
-
-
-
 if __name__=="__main__":
     ## Example inertial forces
 
