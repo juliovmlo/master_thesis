@@ -3,6 +3,7 @@ import numpy as np
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from pybevc import PyBEVC
+from inertial_forces import inertial_loads_fun_v04
 from couplingFramework import SolverWrapper
 from utils import (
     save_load,save_distributed_load,
@@ -16,6 +17,7 @@ class StructuralSolverWrapper(SolverWrapper):
         self.beam_class = ComplBeam
         self.solver_class = CoRot
         self.input_folder = input_folder
+        self.beam = None
         self.solver = None
 
     def initialize(self, initial_conditions):
@@ -25,6 +27,10 @@ class StructuralSolverWrapper(SolverWrapper):
         # Initialize beam model
         self.beam = self.beam_class(self.file_beam)
         self.solver = None # CoRot doesn't have a 'run' method
+
+        # Variable
+        self.pos_old = np.zeros()
+        self.cg_offset = get_cg_offset(self.beam) # It is not update
 
     def update(self, aerodynamic_data, inertial_data):
 
@@ -42,7 +48,9 @@ class StructuralSolverWrapper(SolverWrapper):
         # Solve the beam with CoRot
         self.solver = CoRot(self.beam,numForceInc=10,max_iter=20)
         pos_new = np.reshape(self.solver.final_pos, (-1,6))
-        return pos_new
+
+        stru_results = {'pos': pos_new, 'cg_offset': self.cg_offset, 'beam': self.beam}
+        return stru_results
 
     def convert_data(self, aerodynamic_data, inertial_data):
         # Perform necessary data conversion
@@ -50,6 +58,10 @@ class StructuralSolverWrapper(SolverWrapper):
         aero_loads = aerodynamic_data
         inert_load = inertial_data
 
+        # Change aero loads from c2 to node locations
+        aero_loads = c2_to_node(self.beam,aero_loads)
+
+        # Split in puntual and distributed loads
         load = inert_load.copy()
         load[:,3:] += aero_loads[:,3:]
         load_distr = np.zeros_like(load)
@@ -79,15 +91,13 @@ class AerodynamicSolverWrapper(SolverWrapper):
         self.solver.pitch_deg = op_conditions['pitch_deg']
         self.solver.flag_a_CT = 2 # I don't understand this setting
 
-        # Variables
-        
-
     def update(self, structural_data):
         # Convert structural data to the format required by the aerodynamic solver
         c2_file = self.get_c2_file(structural_data)
 
         # Update the aerodynamic solver with the new data
         save_deflections(c2_file,self.input_folder)
+
         # Updates BEVC
         self.solver.from_c2_file(os.path.join(self.input_folder,'c2_pos.dat'))
 
@@ -95,12 +105,10 @@ class AerodynamicSolverWrapper(SolverWrapper):
         # Retrieve results from the aerodynamic solver
         res_bevc = self.solver.run()
 
-        aero_loads = np.zeros((len(self.solver.s),6))
         load_names = ['fx_b', 'fy_b', 'fz_b', 'sec_mx_b', 'sec_my_b', 'sec_mz_b']
-        for i, name in enumerate(load_names):
-            aero_loads[:,i] = getattr(res_bevc, name)
+        aero_results = {name: res_bevc[name] for name in load_names}
 
-        return aero_loads
+        return aero_results
 
     def get_c2_file(self, structural_data):
         """Finds the new position of c2 and twist. Then create the c2_pos file.
@@ -113,6 +121,15 @@ class AerodynamicSolverWrapper(SolverWrapper):
         c2_file_new = np.column_stack((c2_pos_new,twist_new))
         return c2_file_new
 
+class InertialSolverWrapper(SolverWrapper):
+    def initialize(self):
+        ...
+    def update(self, structural_data):
+        self.pos = structural_data['pos']
+        self.cg_offset = structural_data['cg_offset']
+    def get_results(self):
+        inert_load = -inertial_loads_fun_v04(self.pos,self.cg_offset,beam.M_mat_full,hub_di,omega,pitch_rad)
+        
 
 
 ## Examples

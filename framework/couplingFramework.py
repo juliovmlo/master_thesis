@@ -1,8 +1,8 @@
+from abc import ABC, abstractmethod
 from solverWrapper import (
     StructuralSolverWrapper,
     AerodynamicSolverWrapper,
 )
-from abc import ABC, abstractmethod
 
 class SolverWrapper(ABC):
     """
@@ -11,17 +11,28 @@ class SolverWrapper(ABC):
 
     @abstractmethod
     def initialize(self):
-        """Method with the purpose of instantiating the solver and load the necesary data."""
+        """Instantiates the solver and loads the necesary data."""
         pass
 
     @abstractmethod
     def update(self, data):
-        """Update the state of the solver with the input data."""
+        """Update the state of the solver with the input data. It can run the solver."""
         pass
 
     @abstractmethod
     def get_results(self):
-        """Executes the solver and passes the results."""
+        """Executes the solver (optional) and returns the resulting data.
+        
+        Output: dictionary of the following data:
+            Structural wrapper:
+                's' : nodes positions along the span of the blade [m]
+                'defl': deflections of the elastic centres in the blade root FR, [m]
+                'final_pos': final position of the elastic centre, [m]
+            Aerodynamic wrapper:
+                's': nodes positions along the span of the blade [m]
+                'force': force distribution in C1/2 [N/m]
+                'moments': moments in C1/2 nodes [Nm]
+        """
         pass
 
 
@@ -54,9 +65,9 @@ class CouplingFramework:
 
 class DataManager:
     def __init__(self):
-        self.structural_data = None
-        self.aerodynamic_data = None
-        self.inertial_data = None
+        self.structural_data = {}
+        self.aerodynamic_data = {}
+        self.inertial_data = {}
 
     def get_structural_data(self):
         return self.structural_data
