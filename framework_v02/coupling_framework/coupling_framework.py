@@ -1,4 +1,5 @@
 # coupling_framework.py
+import numpy as np
 from data_manager import DataManager
 from solver_wrapper_interface import SolverWrapper
 
