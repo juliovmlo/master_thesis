@@ -1,5 +1,9 @@
-# main.py
+import sys
 import os
+
+# Add the master_thesis directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 from solver_wrappers.structural_solver_wrapper import StructuralSolverWrapper
 from solver_wrappers.aerodynamic_solver_wrapper import AerodynamicSolverWrapper
 from coupling_framework.coupling_framework import CouplingFramework

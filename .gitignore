@@ -1,2 +1,6 @@
 iea15mw/force.dat
 iea15mw/force.dat
+/framework_v02/coupling_framework/__pycache__
+/framework_v02/solver_wrappers/__pycache__
+/beam_corot/__pycache__
+/beam_corot/__pycache__
