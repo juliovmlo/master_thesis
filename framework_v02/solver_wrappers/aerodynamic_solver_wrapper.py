@@ -1,7 +1,7 @@
 # solver_wrappers/aerodynamic_solver_wrapper.py
 import os
 import numpy as np
-from coupling_framework.solver_wrapper_interface import SolverWrapper
+from ..coupling_framework.solver_wrapper_interface import SolverWrapper
 from pybevc import PyBEVC
 from utils import save_deflections
 

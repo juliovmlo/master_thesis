@@ -1,10 +1,10 @@
 # solver_wrappers/structural_solver_wrapper.py
 import os
 import numpy as np
-from coupling_framework.solver_wrapper_interface import SolverWrapper
+from ..coupling_framework.solver_wrapper_interface import SolverWrapper
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
-from inertial_forces import inertial_loads_fun_v04  # Importing the required function
+from inertial_forces import inertial_loads_fun_v04
 from utils import get_cg_offset, save_load, save_distributed_load, c2_to_node
 
 class StructuralSolverWrapper(SolverWrapper):

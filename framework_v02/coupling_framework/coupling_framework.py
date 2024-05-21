@@ -1,7 +1,8 @@
 # coupling_framework.py
+from .data_manager import DataManager
+from ..solver_wrapper_interface import SolverWrapper
 import numpy as np
-from data_manager import DataManager
-from solver_wrapper_interface import SolverWrapper
+
 
 class CouplingFramework:
     def __init__(self, structural_solver: SolverWrapper, aerodynamic_solver: SolverWrapper, epsilon=1e-3, iter_max=20):
