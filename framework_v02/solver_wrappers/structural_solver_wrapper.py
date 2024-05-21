@@ -1,7 +1,7 @@
 # solver_wrappers/structural_solver_wrapper.py
 import os
 import numpy as np
-from ..coupling_framework.solver_wrapper_interface import SolverWrapper
+from coupling_framework.solver_wrapper_interface import SolverWrapper
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from inertial_forces import inertial_loads_fun_v04
@@ -55,15 +55,16 @@ class StructuralSolverWrapper(SolverWrapper):
             'new_tip_def': new_tip_def,
             'c2_pos_new': c2_pos_new,
             'twist_new': twist_new,
-            'R': self.beam.R
+            # 'R': self.beam.R
         }
 
     def _calculate_inertial_loads(self, pos_old, aerodynamic_data):
-        return -inertial_loads_fun_v04(
+        inertial_loads = -inertial_loads_fun_v04(
             pos_old, self.cg_offset, self.beam.M_mat_full,
             aerodynamic_data['hub_di'], aerodynamic_data['omega'],
             aerodynamic_data['pitch_rad']
         )
+        return np.reshape(inertial_loads,(-1,6))
 
     def _add_loads(self, inert_load, aero_loads):
         load = inert_load.copy()

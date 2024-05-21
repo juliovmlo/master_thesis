@@ -1,6 +1,6 @@
 # coupling_framework.py
-from .data_manager import DataManager
-from ..solver_wrapper_interface import SolverWrapper
+from coupling_framework.data_manager import DataManager
+from coupling_framework.solver_wrapper_interface import SolverWrapper
 import numpy as np
 
 
