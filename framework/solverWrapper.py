@@ -123,10 +123,12 @@ class AerodynamicSolverWrapper(SolverWrapper):
 
 class InertialSolverWrapper(SolverWrapper):
     def initialize(self):
-        ...
+        pass
+
     def update(self, structural_data):
         self.pos = structural_data['pos']
         self.cg_offset = structural_data['cg_offset']
+        
     def get_results(self):
         inert_load = -inertial_loads_fun_v04(self.pos,self.cg_offset,beam.M_mat_full,hub_di,omega,pitch_rad)
         

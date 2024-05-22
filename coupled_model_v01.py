@@ -65,9 +65,6 @@ bevc.pitch_deg = pitch_deg
 bevc.flag_a_CT = 2
 hub_di = bevc.r_hub*2 # For inertial model
 
-# Display all data as an Xarray object
-xr_inp = bevc.as_xarray()
-
 # Load matrix
 aero_distr_forces = np.zeros((len(bevc.s),3))
 aero_moments = np.zeros((len(bevc.s),3))

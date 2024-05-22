@@ -13,6 +13,10 @@ class CouplingFramework:
         self.data_manager = DataManager()
 
     def run(self):
+
+        self.structural_solver.initialize()
+        self.aerodynamic_solver.initialize()
+
         iter_count = 0
         delta_u_rel = self.epsilon + 1
         tip_def_history = []

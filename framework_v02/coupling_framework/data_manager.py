@@ -10,16 +10,16 @@ class DataManager:
         return self.structural_data
 
     def set_structural_data(self, data):
-        self.structural_data = data
+        self.structural_data.update(data)
 
     def get_aerodynamic_data(self):
         return self.aerodynamic_data
 
     def set_aerodynamic_data(self, data):
-        self.aerodynamic_data = data
+        self.aerodynamic_data.update(data)
 
     def get_inertial_data(self):
         return self.inertial_data
 
     def set_inertial_data(self, data):
-        self.inertial_data = data
+        self.inertial_data.update(data)

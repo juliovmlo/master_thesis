@@ -28,12 +28,12 @@ createProjectFolder(input_folder, project_folder)
 f_model_json = "config.json"
 input_folder_stru = os.path.join(os.getcwd(), 'examples/project_folder/stru')
 structural_solver_wrapper = StructuralSolverWrapper(f_model_json, input_folder_stru)
-structural_solver_wrapper.initialize()
+
 
 # Aerodynamic Solver Initialization
 input_folder_aero = 'examples/project_folder/aero'
 aerodynamic_solver_wrapper = AerodynamicSolverWrapper(input_folder_aero, U0, omega_rpm, pitch_deg)
-aerodynamic_solver_wrapper.initialize()
+
 
 # Coupling Framework Initialization
 coupling_framework = CouplingFramework(structural_solver_wrapper, aerodynamic_solver_wrapper)
