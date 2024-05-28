@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 def save_load (load, folder, onlyy = False):
-    """Function to create a force.data file for a given load array. There is the option
+    """Function to create a force.dat file for a given load array. There is the option
     to only give the y-axis load.
 
     Input:
@@ -25,14 +25,22 @@ def save_load (load, folder, onlyy = False):
             out_file.write(line)
 
 def save_distributed_load (load, folder):
-    """Save a distributed load"""
+    """Save a distributed load
+    Function to create a force_distr.dat file for a given distributed load array.
+    
+    Input:
+        load: flat array with the loads for each node in the 6 DoF (Fx, Fy, Fz, Mx, My, Mz)
+    """
+    # Element loads in their first and second nodes
     force_line = []
-    force_line += "# Node_num    Fx      Fy      Fz      Mx      My      Mz \n"
+    force_line += "# Element_num    Fx_n    Fy_n    Fz_n    Mx_n    My_n    Mz_n    Fx_n+1    Fy_n+1    Fz_n+1    Mx_n+1    My_n+1    Mz_n+1 \n"
 
     load = np.reshape(load,(-1,6))
-    for node_i in range(load.shape[0]):
+    for ele_i in range(load.shape[0]-1):
+        node_i = ele_i
         load_str = [f"{f_node:>15.6e}" for f_node in load[node_i]]
-        force_line += f"{node_i+1:4d} {' '.join(load_str)}\n"
+        load_str += [f"{f_node:>15.6e}" for f_node in load[node_i+1]]
+        force_line += f"{ele_i+1:4d} {' '.join(load_str)}\n"
 
     with open(os.path.join(folder,"load_distr.dat"), 'w') as out_file:
         for line in force_line:

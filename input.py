@@ -122,10 +122,15 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     np.savetxt(
         os.path.join(stru_folder, load_filename),
         data,fmt=formats,delimiter='\t',header=headline
-        ) 
+        )
+    headline_distr = "# Element_num    Fx_n    Fy_n    Fz_n    Mx_n    My_n    Mz_n    Fx_n+1    Fy_n+1    Fz_n+1    Mx_n+1    My_n+1    Mz_n+1 \n"
+    ele_vec = nodes_vec[:-1]
+    loads_distr = np.zeros((len(ele_vec),12))
+    data_distr = np.column_stack((ele_vec,loads_distr))
+    formats_distr = ['%d'] + ['%.1f'] * (data_distr.shape[1] - 1) 
     np.savetxt(
         os.path.join(stru_folder, load_distr_filename),
-        data,fmt=formats,delimiter='\t',header=headline
+        data_distr,fmt=formats_distr,delimiter='\t',header=headline_distr
         )
 
     # Create ComplBeam config file
@@ -135,9 +140,7 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
         "Boundary": boundary_filename,
         "Analysistype": "static",
         "static_load": load_filename,
-        # This is not used yet
-        # "static_load_distributed": load_distr_filename,
-        "static_load_distributed_segment": load_distr_filename,
+        "static_load_distributed": load_distr_filename,
         "int_type": "gauss",
         "Npmax": 5,
         "Nip": 6
