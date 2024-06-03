@@ -1,4 +1,6 @@
 # data_manager.py
+import os
+import json
 
 class DataManager:
     def __init__(self):
@@ -23,3 +25,17 @@ class DataManager:
 
     def set_inertial_data(self, data):
         self.inertial_data.update(data)
+
+    def save_data(self, file_path):
+        # Combine all data into a single dictionary
+        combined_data = {
+            'structural_data': self.structural_data,
+            'aerodynamic_data': self.aerodynamic_data,
+            'inertial_data': self.inertial_data
+        }
+
+        # Write the combined data to a JSON file
+        with open(file_path, 'w') as file:
+            json.dump(combined_data, file, indent=4)
+
+        print(f"Data saved to {file_path}")

@@ -23,6 +23,7 @@ iter_max = 20
 input_folder = 'examples/input_iea15mw'
 project_folder = 'examples/project_folder'
 createProjectFolder(input_folder, project_folder)
+save_folder = 'examples/project_folder/results'
 
 # Structural Solver Initialization
 f_model_json = "config.json"
@@ -36,7 +37,7 @@ aerodynamic_solver_wrapper = AerodynamicSolverWrapper(input_folder_aero, U0, ome
 
 
 # Coupling Framework Initialization
-coupling_framework = CouplingFramework(structural_solver_wrapper, aerodynamic_solver_wrapper)
+coupling_framework = CouplingFramework(structural_solver_wrapper, aerodynamic_solver_wrapper,save_path=save_folder)
 
 # Run Coupling Loop
 coupling_framework.run()

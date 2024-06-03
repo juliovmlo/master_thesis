@@ -110,3 +110,29 @@ def get_cg_offset(beam: ComplBeam)->np.ndarray:
         cg_offset[i,:] = subf.get_tsb(beam.v1, beam.scurveTangent[i, :], np.deg2rad(twist_deg[i])) @ ec_to_cg[i, :]
 
     return cg_offset
+
+import json
+
+def save_results(results_dict, path):
+    """
+    Saves a dictionary with the results in the desired path.
+
+    Input:
+        results_dict: dict Dictionary of numpy arrays with the desired data to save.
+        path: str Path where to save the data
+    """
+    # Makes sure the extension is always .json
+    base, _ = os.path.splitext(path)
+    path = base + '.json'
+
+    # Ensure the directory exists
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Convert numpy arrays to lists
+    json_ready_dict = {key: value.tolist() for key, value in results_dict.items()}
+    
+    # Save the dictionary as a JSON file
+    with open(path, 'w') as f:
+        json.dump(json_ready_dict, f, indent=4)

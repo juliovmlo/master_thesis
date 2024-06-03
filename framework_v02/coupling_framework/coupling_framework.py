@@ -5,12 +5,13 @@ import numpy as np
 
 
 class CouplingFramework:
-    def __init__(self, structural_solver: SolverWrapper, aerodynamic_solver: SolverWrapper, epsilon=1e-3, iter_max=20):
+    def __init__(self, structural_solver: SolverWrapper, aerodynamic_solver: SolverWrapper, epsilon=1e-3, iter_max=20,save_path='results'):
         self.structural_solver = structural_solver
         self.aerodynamic_solver = aerodynamic_solver
         self.epsilon = epsilon
         self.iter_max = iter_max
         self.data_manager = DataManager()
+        self.save_path = save_path
 
     def run(self):
 
@@ -55,6 +56,8 @@ class CouplingFramework:
             print(f"Tip def: {new_tip_def} m")
 
         print("Coupling converged" if delta_u_rel <= self.epsilon else "Coupling did not converge")
+
+        self.data_manager.save_data(self.save_path)
 
     def _calculate_delta_u_rel(self, new_tip_def, old_tip_def, radius):
         return np.linalg.norm(np.array(new_tip_def) - np.array(old_tip_def)) / radius
