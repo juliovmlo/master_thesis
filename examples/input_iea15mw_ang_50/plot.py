@@ -1,7 +1,3 @@
-"""
-Attempting to load data.
-"""
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -11,7 +7,7 @@ columns = ["Radius_s", "alfa", "Vrel", "Cl", "Cd", "Cm", "L", "D", "Pos_RP x", "
            "Intmom_RPx", "Intmom_RPy", "Intmom_RPz"]
 
 # Load the data from the file
-file_path =r'C:\Users\Public\OneDrive - Danmarks Tekniske Universitet\Dokumenter\ICAI\DTU\_Thesis\repos\master_thesis\iea15mw_ang\res\output_at_200s.dat' 
+file_path ='res/output_at_200s.dat' 
 data = pd.read_csv(file_path, delim_whitespace=True, comment='#', names=columns)
 
 # Plot Pos_RP y against Radius_s

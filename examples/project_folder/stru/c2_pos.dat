@@ -1,5 +1,5 @@
 # 1/2 chord locations of the cross-sections 
-# node  X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.] 
+# node  X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.]
  1     2.276630e-02    -6.354120e-03     0.000000e+00    -1.559460e+01
  2    -1.293848e-02     1.261945e-02     1.171132e+00    -1.559122e+01
  3    -4.864326e-02     3.159302e-02     2.342264e+00    -1.558783e+01

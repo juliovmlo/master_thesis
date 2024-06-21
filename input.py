@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 import shutil
-from wetb.hawc2 import AEFile, PCFile, StFile
+from wetb.hawc2 import AEFile, PCFile, StFile, HTCFile
 
 def createProjectFolder(inputfolder: str, projectfolder: str):
     """
@@ -13,6 +13,7 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     {
     "c2_file": "c2_pos.dat",
     "st_file": "IEA_15MW_RWT_Blade_st_FPM.st",
+    "st_subset": 1,
     "ae_file": "IEA_15MW_RWT_ae.dat",
     "pc_file": "IEA_15MW_RWT_pc.dat"
     }
@@ -25,9 +26,42 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     with open(os.path.join(inputfolder, 'file_names.json'), 'r') as f:
         file_names = json.load(f)
 
+    # # Read a HTC file
+    # dat_out = dict()
+    # htc_filename = os.path.join(inputfolder, 'IEA_15MW_RWT_ae_nsec_50_stiff.htc')
+    # model_path = './'
+    # htc = HTCFile(htc_filename, ".." if (model_path is None) else model_path)
+    # htc_stru = htc.new_htc_structure
+    # for body in htc_stru.contents.values():
+    #     if ("name" in body.contents):
+    #             # Blade center line
+    #             if (body.name.values[0] == "blade1"):
+    #                 nsec = body.c2_def.nsec.values[0]
+    #                 dat_out["x"] = np.zeros(nsec)
+    #                 dat_out["y"] = np.zeros(nsec)
+    #                 dat_out["z"] = np.zeros(nsec)
+    #                 dat_out["twist_deg"] = np.zeros(nsec)
+    #                 for isec in range(nsec):
+    #                     (dat_out["x"][isec], dat_out["y"][isec],
+    #                     dat_out["z"][isec], dat_out["twist_deg"][isec]) = getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:]
+    #                 st_filename_rel = body.contents['timoschenko_input'].contents['filename'].values[0]
+    #                 os.path.join(htc.modelpath, st_filename_rel)
+    #             # hub radius
+    #             if (body.name.values[0] == "hub1"):
+    #                 nsec = body.c2_def.nsec.values[0]
+    #                 dat_out["r_hub"] = 0.0
+    #                 for isec in range(nsec):
+    #                     r_hub = np.linalg.norm(getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:-1])
+    #                     if r_hub > dat_out["r_hub"]:
+    #                         dat_out["r_hub"] = r_hub
+    # st_filename = os.path.join(htc.modelpath, htc.struc.st_filename.values[0])
+    # ae_filename = os.path.join(htc.modelpath, htc.aero.ae_filename.values[0])
+    # pc_filename = os.path.join(htc.modelpath, htc.aero.pc_filename.values[0])
+
     # TODO: raise an exception when a name is missing
     c2_file = file_names.get("c2_file", "")
     st_file = file_names.get("st_file", "")
+    st_subset = file_names.get("st_subset","")
     ae_file = file_names.get("ae_file", "")
     pc_file = file_names.get("pc_file", "")
 
@@ -83,8 +117,8 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     with open(os.path.join(aero_folder, c2_filename), 'w') as new_file:
         np.savetxt(new_file, content,comments=';', delimiter='\t', header=header)
 
-    # St file
-    st_data = StFile(os.path.join(inputfolder, st_file)).main_data_sets[1][1]
+    # St file 
+    st_data = StFile(os.path.join(inputfolder, st_file)).main_data_sets[1][st_subset]
     headline = (
         '=====================================================================\n'
         'r [0]                   m [1]                 x_cg [2]                y_cg [3]                ri_x [4]                ri_y [5]                pitch [6]                x_e [7]                 y_e [8]                	K_11 [9]                K_12 [10]                K_13 [11]                K_14 [12]                K_15 [13]                K_16 [14]                K_22 [15]                K_23 [16]                K_24 [17]                K_25 [18]                K_26 [19]                K_33 [20]                K_34 [21]                K_35 [22]                K_36 [23]                K_44 [24]                K_45 [25]                K_46 [26]                K_55 [27]                K_56 [28]                K_66 [29] \n'       

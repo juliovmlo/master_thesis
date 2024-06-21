@@ -55,21 +55,24 @@ def save_deflections(c2_pos, folder: str):
 
 from beam_corot.ComplBeam import ComplBeam
 
-def c2_to_node(beam: ComplBeam, loads_c2):
+def c2_to_node(c2_pos, node_pos, loads_c2):
     """
     Moves the loads from the half chord centre to the node centre (elastic centre) position.
 
     Input:
-        beam: instance of the class ComplBeam
+        c2_pos: half chord position in blade root FR, array (N,3)
+        node_pos: elastic centre in blade root FR, array (N,3)
         loads_c2: array of loads Nx6 in C2 in the blade root axis. Forces and moments
     
     Output:
         loads_n: array of loads Nx6 in the nodes in the blade root axis. Forces and moments
     """
     # Nodes are located in the elastic centre
-    c2_pos = beam.c2Input[:, 1:4] # Half chord position in blade root FR
-    node_pos = beam.nodeLocations # Elastic centre in blade root FR
+    # c2_pos = beam.c2Input[:, 1:4] # Half chord position in blade root FR
+    # node_pos = beam.nodeLocations # Elastic centre in blade root FR
     r_node2c2 = c2_pos - node_pos
+
+    # r_node_2c2 = r_node_2c2_ini
 
     f_c2, m_c2 = np.split(loads_c2, [3], axis = 1)
     f_n = f_c2
