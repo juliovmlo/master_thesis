@@ -1,0 +1,73 @@
+________________________________________________________________________________________________________________________
+  Version ID : 13.0.4
+                                                            Time : 11:20:46
+                                                            Date : 27:05.2024
+________________________________________________________________________________________________________________________
+  Result file : ./res/IEA_15MW_RWT_Onshore.dat
+________________________________________________________________________________________________________________________
+   Scans    Channels    Time [sec]        Format
+      20000      60          200.000       ASCII
+
+  Channel   Variable Description               
+
+      1      Time                           s          Time
+      2      bea1 angle                     deg        shaft_rot angle
+      3      bea1 angle_speed               rpm        shaft_rot angle speed
+      4      bea2 angle                     deg        pitch1 angle
+      5      bea2 angle_speed               deg/s      pitch1 angle speed
+      6      bea2 angle                     deg        pitch2 angle
+      7      bea2 angle_speed               deg/s      pitch2 angle speed
+      8      bea2 angle                     deg        pitch3 angle
+      9      bea2 angle_speed               deg/s      pitch3 angle speed
+     10       Omega                         rad/s       Rotor speed
+     11      Ae rot. torque                 kNm        Aero rotor torque
+     12      Ae rot. power                  kW         Aero rotor power
+     13      Ae rot. thrust                 kN         Aero rotor thrust
+     14      WSP gl. coo.,Vx                m/s        Free wind speed Vx, gl. coo, of gl. pos    0.00,   0.00,-150.00
+     15      WSP gl. coo.,Vy                m/s        Free wind speed Vy, gl. coo, of gl. pos    0.00,   0.00,-150.00
+     16      WSP gl. coo.,Vz                m/s        Free wind speed Vz, gl. coo, of gl. pos    0.00,   0.00,-150.00
+     17      Mx coo: tower                  kNm        MomentMx Mbdy:tower nodenr:   1 coo: tower  tower base
+     18      My coo: tower                  kNm        MomentMy Mbdy:tower nodenr:   1 coo: tower  tower base
+     19      Mz coo: tower                  kNm        MomentMz Mbdy:tower nodenr:   1 coo: tower  tower base
+     20      Mx coo: tower                  kNm        MomentMx Mbdy:tower nodenr:  10 coo: tower  tower yaw bearing
+     21      My coo: tower                  kNm        MomentMy Mbdy:tower nodenr:  10 coo: tower  tower yaw bearing
+     22      Mz coo: tower                  kNm        MomentMz Mbdy:tower nodenr:  10 coo: tower  tower yaw bearing
+     23      Mx coo: shaft                  kNm        MomentMx Mbdy:shaft nodenr:   1 coo: shaft  main bearing
+     24      My coo: shaft                  kNm        MomentMy Mbdy:shaft nodenr:   1 coo: shaft  main bearing
+     25      Mz coo: shaft                  kNm        MomentMz Mbdy:shaft nodenr:   1 coo: shaft  main bearing
+     26      Mx coo: blade1                 kNm        MomentMx Mbdy:blade1 nodenr:   1 coo: blade1  blade 1 root
+     27      My coo: blade1                 kNm        MomentMy Mbdy:blade1 nodenr:   1 coo: blade1  blade 1 root
+     28      Mz coo: blade1                 kNm        MomentMz Mbdy:blade1 nodenr:   1 coo: blade1  blade 1 root
+     29      Mx coo: blade2                 kNm        MomentMx Mbdy:blade2 nodenr:   1 coo: blade2  blade 2 root
+     30      My coo: blade2                 kNm        MomentMy Mbdy:blade2 nodenr:   1 coo: blade2  blade 2 root
+     31      Mz coo: blade2                 kNm        MomentMz Mbdy:blade2 nodenr:   1 coo: blade2  blade 2 root
+     32      Mx coo: blade3                 kNm        MomentMx Mbdy:blade3 nodenr:   1 coo: blade3  blade 3 root
+     33      My coo: blade3                 kNm        MomentMy Mbdy:blade3 nodenr:   1 coo: blade3  blade 3 root
+     34      Mz coo: blade3                 kNm        MomentMz Mbdy:blade3 nodenr:   1 coo: blade3  blade 3 root
+     35      State pos x  coo: global       m          State pos x  Mbdy:tower E-nr:   9 Z-rel:1.00 coo: global  tower top fa displ
+     36      State pos y  coo: global       m          State pos y  Mbdy:tower E-nr:   9 Z-rel:1.00 coo: global  tower top ss displ
+     37      State acc x  coo: global       m/s^2      State acc x  Mbdy:tower E-nr:   9 Z-rel:1.00 coo: global  tower top fa acc
+     38      State acc y  coo: global       m/s^2      State acc y  Mbdy:tower E-nr:   9 Z-rel:1.00 coo: global  tower top ss acc
+     39      State pos x  coo: blade1       m          State pos x  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: blade1  blade 1 tip pos
+     40      State pos y  coo: blade1       m          State pos y  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: blade1  blade 1 tip pos
+     41      State pos z  coo: blade1       m          State pos z  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: blade1  blade 1 tip pos
+     42      State pos x  coo: blade2       m          State pos x  Mbdy:blade2 E-nr:   9 Z-rel:1.00 coo: blade2  blade 2 tip pos
+     43      State pos y  coo: blade2       m          State pos y  Mbdy:blade2 E-nr:   9 Z-rel:1.00 coo: blade2  blade 2 tip pos
+     44      State pos z  coo: blade2       m          State pos z  Mbdy:blade2 E-nr:   9 Z-rel:1.00 coo: blade2  blade 2 tip pos
+     45      State pos x  coo: blade3       m          State pos x  Mbdy:blade3 E-nr:   9 Z-rel:1.00 coo: blade3  blade 3 tip pos
+     46      State pos y  coo: blade3       m          State pos y  Mbdy:blade3 E-nr:   9 Z-rel:1.00 coo: blade3  blade 3 tip pos
+     47      State pos z  coo: blade3       m          State pos z  Mbdy:blade3 E-nr:   9 Z-rel:1.00 coo: blade3  blade 3 tip pos
+     48      State pos x  coo: global       m          State pos x  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: global  gl blade 1 tip pos
+     49      State pos y  coo: global       m          State pos y  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: global  gl blade 1 tip pos
+     50      State pos z  coo: global       m          State pos z  Mbdy:blade1 E-nr:   9 Z-rel:1.00 coo: global  gl blade 1 tip pos
+     51      WSP Vx, glco, R= 71.6          m/s        Wind speed Vx of blade   1 at radius  71.63, global coo.
+     52      Alfa, R= 71.6                  deg        Angle of attack of blade   1 at radius  71.63
+     53      Alfa, R= 71.6                  deg        Angle of attack of blade   2 at radius  71.63
+     54      Alfa, R= 71.6                  deg        Angle of attack of blade   3 at radius  71.63
+     55      Cl, R= 72.5                    deg        Cl of blade   1 at radius  71.63
+     56      Cl, R= 72.5                    deg        Cl of blade   2 at radius  71.63
+     57      Cl, R= 72.5                    deg        Cl of blade   3 at radius  71.63
+     58      Cd, R= 72.5                    deg        Cd of blade   1 at radius  71.63
+     59      Cd, R= 72.5                    deg        Cd of blade   2 at radius  71.63
+     60      Cd, R= 72.5                    deg        Cd of blade   3 at radius  71.63
+________________________________________________________________________________________________________________________

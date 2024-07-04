@@ -26,38 +26,6 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     with open(os.path.join(inputfolder, 'file_names.json'), 'r') as f:
         file_names = json.load(f)
 
-    # # Read a HTC file
-    # dat_out = dict()
-    # htc_filename = os.path.join(inputfolder, 'IEA_15MW_RWT_ae_nsec_50_stiff.htc')
-    # model_path = './'
-    # htc = HTCFile(htc_filename, ".." if (model_path is None) else model_path)
-    # htc_stru = htc.new_htc_structure
-    # for body in htc_stru.contents.values():
-    #     if ("name" in body.contents):
-    #             # Blade center line
-    #             if (body.name.values[0] == "blade1"):
-    #                 nsec = body.c2_def.nsec.values[0]
-    #                 dat_out["x"] = np.zeros(nsec)
-    #                 dat_out["y"] = np.zeros(nsec)
-    #                 dat_out["z"] = np.zeros(nsec)
-    #                 dat_out["twist_deg"] = np.zeros(nsec)
-    #                 for isec in range(nsec):
-    #                     (dat_out["x"][isec], dat_out["y"][isec],
-    #                     dat_out["z"][isec], dat_out["twist_deg"][isec]) = getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:]
-    #                 st_filename_rel = body.contents['timoschenko_input'].contents['filename'].values[0]
-    #                 os.path.join(htc.modelpath, st_filename_rel)
-    #             # hub radius
-    #             if (body.name.values[0] == "hub1"):
-    #                 nsec = body.c2_def.nsec.values[0]
-    #                 dat_out["r_hub"] = 0.0
-    #                 for isec in range(nsec):
-    #                     r_hub = np.linalg.norm(getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:-1])
-    #                     if r_hub > dat_out["r_hub"]:
-    #                         dat_out["r_hub"] = r_hub
-    # st_filename = os.path.join(htc.modelpath, htc.struc.st_filename.values[0])
-    # ae_filename = os.path.join(htc.modelpath, htc.aero.ae_filename.values[0])
-    # pc_filename = os.path.join(htc.modelpath, htc.aero.pc_filename.values[0])
-
     # TODO: raise an exception when a name is missing
     c2_file = file_names.get("c2_file", "")
     st_file = file_names.get("st_file", "")
@@ -183,9 +151,148 @@ def createProjectFolder(inputfolder: str, projectfolder: str):
     with open( os.path.join(stru_folder, config_filename), 'w') as json_file:
         json.dump(config_data, json_file, indent=4) # indent=4 for pretty formatting
 
+def createProjectFolderV02(htc_filename: str, model_path: str, projectfolder: str):
+    # Read a HTC file
+    dat_out = dict()
+    model_path = './'
+    htc = HTCFile(htc_filename, ".." if (model_path is None) else model_path)
+    htc_stru = htc.new_htc_structure
+    for body in htc_stru.contents.values():
+        if ("name" in body.contents):
+                # Blade center line
+                if (body.name.values[0] == "blade1"):
+                    nsec = body.c2_def.nsec.values[0]
+                    dat_out["nsec"] = nsec # Number of sections
+                    dat_out["x"] = np.zeros(nsec)
+                    dat_out["y"] = np.zeros(nsec)
+                    dat_out["z"] = np.zeros(nsec)
+                    dat_out["twist_deg"] = np.zeros(nsec)
+                    for isec in range(nsec):
+                        (dat_out["x"][isec], dat_out["y"][isec],
+                        dat_out["z"][isec], dat_out["twist_deg"][isec]) = getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:]
+                    st_filedir_original = os.path.join(htc.modelpath, body.timoschenko_input.filename[0])
+                    st_subset = body.timoschenko_input.set[1]
+                # hub radius
+                if (body.name.values[0] == "hub1"):
+                    nsec = body.c2_def.nsec.values[0]
+                    dat_out["r_hub"] = 0.0
+                    for isec in range(nsec):
+                        r_hub = np.linalg.norm(getattr(body.c2_def, "sec__%d"%(isec+1)).values[1:-1])
+                        if r_hub > dat_out["r_hub"]:
+                            dat_out["r_hub"] = r_hub
+
+    # Check and create directories
+    # projectfolder/
+    # ├─ aero/
+    # ├─ stru/
+    if not os.path.exists(projectfolder):
+        os.makedirs(projectfolder)
+    stru_folder = os.path.join(projectfolder, 'stru')
+    if not os.path.exists(stru_folder):
+        os.makedirs(stru_folder)
+    aero_folder = os.path.join(projectfolder, 'aero')
+    if not os.path.exists(aero_folder):
+        os.makedirs(aero_folder)
+
+    # HTC file to aerodynamics folder
+    # shutil.copy(
+    #     htc_filename,
+    #     os.path.join(aero_folder, "htc_file.htc"),
+    #     )
+    
+    # C2 file
+    c2_filename = "c2_pos.dat"
+    nodes_num = dat_out["x"].shape[0]
+    c2_data = np.zeros((nodes_num, 5))
+    c2_data[:,0] = list(range(1,nodes_num+1))
+    for i, name in enumerate(["x", "y", "z", "twist_deg"]):
+        c2_data[:,i+1] = dat_out[name]
+
+    headline = (
+        "; 1/2 chord locations of the cross-sections\n"
+        "; node  X_coordinate[m]	Y_coordinate[m]	Z_coordinate[m]	Twist[deg.]"
+    )
+    formats = ['%d'] + ['%.6e'] * (c2_data.shape[1] - 1)
+    np.savetxt(
+        os.path.join(stru_folder, c2_filename),
+        c2_data,fmt=formats,delimiter='\t',header=headline
+        )
+
+    # St file 
+    st_filename = "st_file.st"
+    st_data = StFile(st_filedir_original).main_data_sets[1][st_subset]
+    headline = (
+        '=====================================================================\n'
+        'r [0]                   m [1]                 x_cg [2]                y_cg [3]                ri_x [4]                ri_y [5]                pitch [6]                x_e [7]                 y_e [8]                	K_11 [9]                K_12 [10]                K_13 [11]                K_14 [12]                K_15 [13]                K_16 [14]                K_22 [15]                K_23 [16]                K_24 [17]                K_25 [18]                K_26 [19]                K_33 [20]                K_34 [21]                K_35 [22]                K_36 [23]                K_44 [24]                K_45 [25]                K_46 [26]                K_55 [27]                K_56 [28]                K_66 [29] \n'       
+        '====================================================================='
+    )
+    np.savetxt(
+        os.path.join(stru_folder, st_filename),
+        st_data,delimiter='\t',
+        header=headline,
+        )
+    
+    # Create boundary file
+    boundary_filename = 'boundary.dat' # Default name
+    boundary_file_content = "# Node# x_t_dof y_t_dof z_t_dof x_r_dof y_r_dof z_r_dof\n1 0 0 0 0 0 0"
+    with open(os.path.join(stru_folder, boundary_filename), 'w') as new_file:
+        new_file.write(boundary_file_content)
+
+    # Create loads files
+    load_filename = 'load.dat'
+    load_distr_filename = 'load_distr.dat'
+    config_filename = 'config.json'
+    headline = 'Node_num    Fx      Fy      Fz      Mx      My      Mz'
+    nodes_vec = np.arange(1, nodes_num + 1)
+    loads = np.zeros((len(nodes_vec),6))
+    data = np.column_stack((nodes_vec,loads))
+    formats = ['%d'] + ['%.6e'] * (data.shape[1] - 1)
+    np.savetxt(
+        os.path.join(stru_folder, load_filename),
+        data,fmt=formats,delimiter='\t',header=headline
+        )
+    headline_distr = "# Element_num    Fx_n    Fy_n    Fz_n    Mx_n    My_n    Mz_n    Fx_n+1    Fy_n+1    Fz_n+1    Mx_n+1    My_n+1    Mz_n+1 \n"
+    ele_vec = nodes_vec[:-1]
+    loads_distr = np.zeros((len(ele_vec),12))
+    data_distr = np.column_stack((ele_vec,loads_distr))
+    formats_distr = ['%d'] + ['%.6e'] * (data_distr.shape[1] - 1) 
+    np.savetxt(
+        os.path.join(stru_folder, load_distr_filename),
+        data_distr,fmt=formats_distr,delimiter='\t',header=headline_distr
+        )
+    
+    # Create ComplBeam config file
+    config_data = {
+        "Properties": st_filename,
+        "c2_pos": c2_filename,
+        "Boundary": boundary_filename,
+        "Analysistype": "static",
+        "static_load": load_filename,
+        "static_load_distributed": load_distr_filename,
+        "int_type": "gauss",
+        "Npmax": 5,
+        "Nip": 6
+    }
+
+    with open( os.path.join(stru_folder, config_filename), 'w') as json_file:
+        json.dump(config_data, json_file, indent=4) # indent=4 for pretty formatting
+
+    # Create the BEVC config file
+    config_data = {
+        "htc_filename": htc_filename,
+        "model_path": model_path,
+    }
+
+    with open( os.path.join(aero_folder, config_filename), 'w') as json_file:
+        json.dump(config_data, json_file, indent=4) # indent=4 for pretty formatting
+
 
 if __name__=="__main__":
-    inputfolder = r"examples/input_iea15mw"
-    projectfolder =  os.path.dirname(inputfolder) + "/project_" + os.path.basename(inputfolder)
+    # inputfolder = r"examples/input_iea15mw"
+    # projectfolder =  os.path.dirname(inputfolder) + "/project_" + os.path.basename(inputfolder)
 
-    createProjectFolder(inputfolder,projectfolder)
+    # createProjectFolder(inputfolder,projectfolder)
+
+    htc_filename = r"examples/input_only_hacw2/IEA_15MW_RWT_ae_nsec_50_stiff.htc"
+    projectfolder = "examples/project_" + os.path.basename(htc_filename)
+    createProjectFolderV02(htc_filename,projectfolder)

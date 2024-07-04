@@ -1,11 +1,12 @@
 # Import libraries
 import os
+import json
 import numpy as np
 from beam_corot.ComplBeam import ComplBeam
 from beam_corot.CoRot import CoRot
 from pybevc import PyBEVC
 from inertial_forces import inertial_loads_fun_v04
-from input import createProjectFolder
+from input import createProjectFolder, createProjectFolderV02
 from utils import (
     save_load,save_distributed_load,
     c2_to_node,
@@ -34,10 +35,11 @@ iter_max = 20
 
 #%%
 # Folders and file names
-inputfolder = 'examples/input_iea15mw_ang_50'
-projectfolder = 'examples/project_folder_ang_50'
 
-createProjectFolder(inputfolder,projectfolder)
+
+htc_filename = r'/home/juliovmlo/master_thesis/master_thesis/examples/input_only_hacw2/IEA_15MW_RWT_Onshore_steadystate.htc'
+projectfolder = r'examples/project_folder_ang'
+createProjectFolderV02(htc_filename,'./',projectfolder)
 
 #%% Initializing the structural model
 # Model input json file  name
@@ -55,9 +57,13 @@ cg_offset = get_cg_offset(beam) # TODO: update it in the loop
 bevc = PyBEVC()
 
 inputfolder_aero = projectfolder + '/aero'
+config_aero_filename = os.path.join(inputfolder_aero,'config.json')
+with open(config_aero_filename) as f:
+                aero_config = json.load(f)
 # I use the trick of using the HTC file
 # bevc.from_htc_file('examples/input_iea15mw_ang_stiff/IEA_15MW_RWT_ae_nsec_50_stiff.htc',model_path='./')
-bevc.from_htc_file(os.path.join(inputfolder, 'IEA_15MW_RWT_ae_nsec_50.htc'),model_path='./')
+# bevc.from_htc_file(os.path.join(inputfolder, 'IEA_15MW_RWT_ae_nsec_50_stiff.htc'),model_path='./')
+bevc.from_htc_file(aero_config["htc_filename"],model_path=aero_config["model_path"])
 # bevc.from_ae_file(os.path.join(inputfolder_aero,'ae_file.dat'))
 # bevc.from_pc_file(os.path.join(inputfolder_aero,'pc_file.dat'))
 # bevc.from_c2_file(os.path.join(inputfolder_aero,'c2_pos.dat'))
@@ -120,8 +126,8 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     for i, name in enumerate(load_names):
         aero_loads_34c[:,i] = getattr(res_bevc, name)
 
-    power = res_bevc.power*3
-    thrust = res_bevc.thrust*3
+    power = res_bevc.power
+    thrust = res_bevc.thrust
     
     names = ['x_34c_r','y_34c_r','z_34c_r']
     for i, name in enumerate(names):
