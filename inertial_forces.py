@@ -128,7 +128,7 @@ def inertial_loads_fun_v04 (pos_vec_B2, cg_offset_mat, m_mat, r_hub, omega, pitc
 
     ## Obataining inertial loads in nodes
 
-    # The acc_vec is used in the blade rood frame of reference, B2
+    # The acc_vec is used in the blade root frame of reference, B2
     inertial_loads = m_mat @ b1_to_b2(acc_vec, pitch_rad)
 
     return inertial_loads

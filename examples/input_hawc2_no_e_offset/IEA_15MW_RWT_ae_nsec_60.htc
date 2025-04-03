@@ -1,0 +1,466 @@
+; IEA 15 MW Reference Wind Turbine "onshore" model.
+;  Same as monopile, but fixed at bottom of tower
+;  (+15m above MWL) in translation and rotation.
+;
+; Note! This file links to external htc files that contain
+; values for the WTG system.
+;
+begin simulation ;
+  time_stop    200.0 ;
+  solvertype   1 ;    (newmark)
+  on_no_convergence continue ;
+  convergence_limits 1E3 1.0 1E-7 ;
+  logfile ./log/IEA_15MW_RWT_ae_nsec_60.log ;
+  begin newmark;
+    deltat    0.01;
+  end newmark;
+end simulation;
+;
+;-------------------------------------------------------------------------------------------------------------------------------
+begin new_htc_structure;
+  ;body_output_file_name ./bodyeig/IEA_15MW_RWT_Onshore_body.dat;  body locations correct?
+  ;body_eigenanalysis_file_name ./bodyeig/IEA_15MW_RWT_Onshore_body_eigen.dat;  damping correct?
+  ;struct_inertia_output_file_name ./bodyeig/IEA_15MW_RWT_Onshore_struc_inertia.dat;  CM locations correct?
+  ;structure_eigenanalysis_file_name ./bodyeig/IEA_15MW_RWT_Onshore_struc_eigen.dat;  full-system frequencies?
+  ;
+  begin main_body;  tower
+    name        tower ;
+    type        timoschenko ;
+    nbodies     1 ;
+    node_distribution     c2_def ;
+    damping_posdef   0.0 0.0 0.0 0.004 0.004 0.0004  ; tuned to 1% critical (approx 6% log dec) on 1st FA(0.79 Hz)/SS(0.79 Hz)/torsion(8 Hz) modes (#1, #2, #7)
+    begin timoschenko_input;
+      filename ./data/IEA_15MW_RWT_Tower_st.dat;
+      set 1 3 ; Stiff Tower
+    end timoschenko_input;
+    begin c2_def;              Definition of centerline (main_body coordinates)
+      nsec 10;
+      sec    1    0    0      0.00    0    ;  x,y,z,twist
+      sec    2    0    0    -15.0     0    ;
+      sec    3    0    0    -30.0     0    ;
+      sec    4    0    0    -45.0     0    ;
+      sec    5    0    0    -60.0     0    ;
+      sec    6    0    0    -75.0     0    ;
+      sec    7    0    0    -90.0     0    ;
+      sec    8    0    0    -105.0    0    ;
+      sec    9    0    0    -120.0    0    ;
+      sec    10   0    0    -129.386  0    ;
+    end c2_def ;
+  end main_body;
+  ;
+  ;
+  begin main_body;  towertop
+    name        towertop ;
+    type        timoschenko ;
+    nbodies     1 ;
+    node_distribution     c2_def ;
+    damping_posdef  0.0  0.0  0.0  7.00E-04  7.00E-04  7.00E-04  ;   dummy values (stiff body)
+    concentrated_mass  1  0.00   0.00    0.00    28249   0.00          0.00           0.00    ;  yaw system
+    concentrated_mass  1  0.00  -5.125  -4.315  644857  7.674778e+06  1.055686e+07  8.127143e+06    ;  nacelle: NR+R mass; NR inertia
+    begin timoschenko_input;
+      filename ./data/IEA_15MW_RWT_Dummy_st.dat;
+      set 1 1 ; Stiff
+    end timoschenko_input;
+    begin c2_def;
+      nsec 2;
+      sec 1 0.0 0.0  0.0    0.0 ; x,y,z,twist
+      sec 2 0.0 0.0 -4.349459414248071  0.0 ;
+    end c2_def ;
+  end main_body;
+;
+  begin main_body;  connector
+    name        connector ;
+    type        timoschenko ;
+    nbodies     1 ;
+    node_distribution     c2_def ;
+    damping_posdef  0.0  0.0  0.0  7.00E-04  7.00E-04  7.00E-04  ;   dummy values (stiff body)
+    gravity 0.0; No gravity
+    begin timoschenko_input;
+      filename ./data/IEA_15MW_RWT_Dummy_st.dat;
+      set 1 1 ; Stiff
+    end timoschenko_input;
+    begin c2_def;
+      nsec 2;
+      sec 1 0.0 0.0  0.0 0.0 ; x,y,z,twist
+      sec 2 0.0 0.0  5.96769163920947  0.0 ;
+    end c2_def ;
+  end main_body;
+;
+  begin main_body;  shaft
+    name        shaft ;
+    type        timoschenko ;
+    nbodies     1 ;
+    node_distribution     c2_def ;
+    damping_posdef  0.0 0.0 0.0 4.65E-04  4.65E-04  5.971406e-04 ;  Kx=Ky=dummy; Kz tuned to 5% critical for free-free Ig, Ir
+    concentrated_mass  1  0.0 0.0 0.0 0.0 0.0 0.0 1836784    ;    generator inertia about shaft
+    concentrated_mass  2  0.0 0.0 0.0 69131 0.0 0.0 969952    ;    hub mass/inertia;
+    gravity 0.0; No gravity
+    begin timoschenko_input;
+      filename ./data/IEA_15MW_RWT_Shaft_st.dat;
+      set 1 2 ; Stiff
+    end timoschenko_input;
+    begin c2_def;
+      nsec 2;
+      sec 1 0.0 0.0  0.00 0.0 ; x,y,z,twist
+      sec 2 0.0 0.0  6.129880124703066 0.0 ;
+    end c2_def ;
+  end main_body;
+;
+  begin main_body;  hub
+    name        hub1 ;
+    type        timoschenko ;
+    nbodies     1 ;
+    node_distribution     c2_def ;
+    damping_posdef  0.0  0.0  0.0  3.00E-06  3.00E-06  2.00E-05;  dummy values (rigid)
+    gravity 0.0; No gravity
+    begin timoschenko_input;
+      filename ./data/IEA_15MW_RWT_Dummy_st.dat;
+      set 1 1 ; Stiff
+    end timoschenko_input;
+    begin c2_def;
+      nsec 2;
+      sec 1 0.0 0.0 0.0 0.0 ; x,y,z,twist
+      sec 2 0.0 0.0 3.97 0.0 ;
+    end c2_def ;
+  end main_body;
+;
+  begin main_body;
+    name           hub2 ;
+    copy_main_body hub1;
+  end main_body;
+;
+  begin main_body;
+    name           hub3 ;
+    copy_main_body hub1 ;
+  end main_body;
+;
+  begin main_body; blade
+    name        blade1 ;
+    type        timoschenko ;
+    nbodies     10 ;
+    node_distribution    c2_def;
+    damping_aniso  0.0 0.0 0.0 3.038e-3 2.167e-3 1.0e-8 ; NoFPM. blade damping tuned to 3% log dec flap/edge, torsion arbitrarily small
+    gravity 0.0; No gravity
+    begin timoschenko_input ;
+      filename ./data/IEA_15MW_RWT_Blade_st_noFPM.st;  blade files: [IEA_15MW_RWT_Blade_st_fpm.dat] or [IEA_15MW_RWT_Blade_st_nofpm.dat]
+      FPM 0;  is blade file original beam model [0] or fully populated matrix from BECAS [1]
+      set 1 1 ;  [1 1]=flexible, [1 2]=no torsion, [1 3]=stiff
+    end timoschenko_input;
+    begin c2_def; Modified to 50 sections.
+      nsec 60 ;
+      sec 1 0.022766 -0.006354 0.000000 -15.594600 ;
+      sec 2 0.020478 -0.005201 0.083005 -15.599576 ;
+      sec 3 0.013492 -0.001651 0.331777 -15.612576 ;
+      sec 4 0.001459 0.004559 0.745592 -15.627892 ;
+      sec 5 -0.016167 0.013829 1.323250 -15.636235 ;
+      sec 6 -0.040073 0.026642 2.063075 -15.625079 ;
+      sec 7 -0.071006 0.043496 2.962931 -15.579121 ;
+      sec 8 -0.109689 0.064809 4.020226 -15.480844 ;
+      sec 9 -0.156709 0.090823 5.231931 -15.311178 ;
+      sec 10 -0.212404 0.121488 6.594590 -15.050237 ;
+      sec 11 -0.276742 0.156355 8.104338 -14.678095 ;
+      sec 12 -0.349219 0.194467 9.756917 -14.176281 ;
+      sec 13 -0.429025 0.234457 11.547691 -13.538390 ;
+      sec 14 -0.515012 0.274503 13.471665 -12.773669 ;
+      sec 15 -0.605421 0.312203 15.523499 -11.904174 ;
+      sec 16 -0.697392 0.344708 17.697518 -10.966415 ;
+      sec 17 -0.787045 0.368671 19.987726 -10.012110 ;
+      sec 18 -0.868997 0.381983 22.387764 -9.091577 ;
+      sec 19 -0.935907 0.385208 24.890870 -8.240425 ;
+      sec 20 -0.980851 0.379761 27.489935 -7.482837 ;
+      sec 21 -1.003886 0.367809 30.177404 -6.780464 ;
+      sec 22 -1.008037 0.352114 32.945400 -6.072558 ;
+      sec 23 -0.998297 0.334864 35.785975 -5.360664 ;
+      sec 24 -0.981306 0.317768 38.691096 -4.693364 ;
+      sec 25 -0.962668 0.299312 41.652538 -4.096739 ;
+      sec 26 -0.946073 0.273644 44.661897 -3.563426 ;
+      sec 27 -0.932973 0.234823 47.710570 -3.083044 ;
+      sec 28 -0.920030 0.177907 50.789706 -2.645600 ;
+      sec 29 -0.904079 0.101440 53.890446 -2.241504 ;
+      sec 30 -0.884759 0.014385 57.004186 -1.864637 ;
+      sec 31 -0.862364 -0.076068 60.122230 -1.511317 ;
+      sec 32 -0.837557 -0.178438 63.235423 -1.185951 ;
+      sec 33 -0.810974 -0.302522 66.334569 -0.892246 ;
+      sec 34 -0.782683 -0.447338 69.410756 -0.623032 ;
+      sec 35 -0.752668 -0.608117 72.455291 -0.368524 ;
+      sec 36 -0.721132 -0.776988 75.459894 -0.119980 ;
+      sec 37 -0.688461 -0.947976 78.416336 0.135731 ;
+      sec 38 -0.655399 -1.122351 81.316128 0.425911 ;
+      sec 39 -0.622688 -1.301897 84.150906 0.762628 ;
+      sec 40 -0.590953 -1.487010 86.912543 1.127434 ;
+      sec 41 -0.560507 -1.676248 89.593242 1.484964 ;
+      sec 42 -0.531361 -1.866641 92.185544 1.789940 ;
+      sec 43 -0.503302 -2.054927 94.682284 2.006103 ;
+      sec 44 -0.475737 -2.238992 97.076489 2.123304 ;
+      sec 45 -0.447613 -2.418926 99.361303 2.170892 ;
+      sec 46 -0.419335 -2.594506 101.530223 2.171964 ;
+      sec 47 -0.392925 -2.765104 103.577124 2.141021 ;
+      sec 48 -0.371185 -2.929888 105.496251 2.088086 ;
+      sec 49 -0.353217 -3.087587 107.282210 2.019795 ;
+      sec 50 -0.335078 -3.236569 108.929990 1.939672 ;
+      sec 51 -0.312872 -3.375197 110.434969 1.850214 ;
+      sec 52 -0.285297 -3.502142 111.792910 1.754978 ;
+      sec 53 -0.252618 -3.616289 112.999988 1.657858 ;
+      sec 54 -0.216361 -3.716733 114.052812 1.562955 ;
+      sec 55 -0.178884 -3.802753 114.948459 1.474351 ;
+      sec 56 -0.142967 -3.873791 115.684487 1.395890 ;
+      sec 57 -0.111439 -3.929429 116.258930 1.330994 ;
+      sec 58 -0.086858 -3.969367 116.670292 1.282500 ;
+      sec 59 -0.071246 -3.993405 116.917522 1.252528 ;
+      sec 60 -0.065894 -4.001430 117.000000 1.242390 ;
+     end c2_def ;
+   end main_body;
+;
+  begin main_body;
+    name           blade2 ;
+    copy_main_body blade1;
+  end main_body;
+;
+  begin main_body;
+    name           blade3 ;
+    copy_main_body blade1 ;
+  end main_body;
+;
+  ;
+  begin orientation;
+    ;
+    begin base;  tower to ground
+      body   tower;
+      inipos        0.0 0.0 -15.0 ;  tower starts above transition piece
+      body_eulerang 0.0 0.0   0.0 ;  same as global: zT down, yT downwind
+    end base;
+    ;
+    begin relative;  towertop to tower
+      mbdy1  tower last;
+      mbdy2  towertop 1;
+      mbdy2_eulerang 0.0 0.0 0.0;   same as global: zTT down, yTT downwind
+    end relative;
+;
+    begin relative;  connector to towertop
+      mbdy1  towertop last;
+      mbdy2  connector 1;
+      mbdy2_eulerang 90.0 0.0 0.0;
+      mbdy2_eulerang 0.0 0.0 0.0;    0 deg tilt; zC along shaft upwind, xC horizontal
+    end relative;
+;
+    begin relative;  shaft to connector
+      mbdy1  connector last;
+      mbdy2  shaft 1;
+      mbdy2_eulerang 0.0 0.0 0.0;    same as connector; zS along shaft upwind
+      mbdy2_ini_rotvec_d1 0.0 0.0 -1.0 0.2 ;
+    end relative;
+;
+    begin relative;  hub1 to shaft
+      mbdy1  shaft last;
+      mbdy2  hub1 1;
+      mbdy2_eulerang -90.0 0.0 0.0;
+      mbdy2_eulerang 0.0 180.0 0.0;
+      mbdy2_eulerang 0.0 0.0 0.0;      0 deg cone; zH along blade, xH towards LE
+    end relative;
+;
+    begin relative;  hub2 to shaft
+      mbdy1  shaft last;
+      mbdy2  hub2 1;
+      mbdy2_eulerang -90.0 0.0 0.0;
+      mbdy2_eulerang 0.0 60.0 0.0;
+      mbdy2_eulerang 0.0 0.0 0.0;      0 deg cone angle
+    end relative;
+;
+    begin relative;  hub3 to shaft
+      mbdy1  shaft last;
+      mbdy2  hub3 1;
+      mbdy2_eulerang -90.0 0.0 0.0;
+      mbdy2_eulerang 0.0 -60.0 0.0;
+      mbdy2_eulerang 0.0 0.0 0.0;      0 deg cone angle
+    end relative;
+;
+    begin relative;  blade1 to hub1
+      mbdy1  hub1 last;
+      mbdy2  blade1 1;
+      mbdy2_eulerang 0.0 0.0 0;         same as hub; zB towards tip, xB towards LE
+    end relative;
+;
+    begin relative;  blade2 to hub2
+      mbdy1  hub2 last;
+      mbdy2  blade2 1;
+      mbdy2_eulerang 0.0 0.0 0.0;
+    end relative;
+;
+    begin relative;  blade3 to hub3
+      mbdy1  hub3 last;
+      mbdy2  blade3 1;
+      mbdy2_eulerang 0.0 0.0 0.0;
+    end relative;
+    ;
+  end orientation;
+  ;
+  begin constraint;
+    ;
+    begin fix0;  tower fixed to ground
+      body tower;
+    end fix0;
+    ;
+;
+  begin fix1;  towertop fixed to tower
+    mbdy1 tower last ;
+    mbdy2 towertop 1;
+  end fix1;
+;
+  begin fix1;  connector fixed to towertop
+    mbdy1 towertop last ;
+    mbdy2 connector 1;
+  end fix1;
+;
+  begin bearing3;  shaft rotates as free bearing
+    name  shaft_rot;
+    mbdy1 connector last;
+    mbdy2 shaft 1;
+    bearing_vector 2 0.0 0.0 -1.0;  x=coo (0=global.1=body1.2=body2) vector in body2 coordinates where the free rotation is present
+    omegas 0.5969; % Set it to 5.7 RPM
+  end bearing3;
+;
+  begin fix1;
+    mbdy1 shaft last ;
+    mbdy2 hub1 1;
+  end fix1;
+;
+  begin fix1;
+    mbdy1 shaft last ;
+    mbdy2 hub2 1;
+  end fix1;
+;
+  begin fix1;
+    mbdy1 shaft last ;
+    mbdy2 hub3 1;
+  end fix1;
+;
+  begin bearing2;
+    name pitch1;
+    mbdy1 hub1 last;
+    mbdy2 blade1 1;
+    bearing_vector 2 0.0 0.0 -1.0;
+  end bearing2;
+;
+  begin bearing2;
+    name pitch2;
+    mbdy1 hub2 last;
+    mbdy2 blade2 1;
+    bearing_vector 2 0.0 0.0 -1.0;
+  end bearing2;
+;
+  begin bearing2;
+    name pitch3;
+    mbdy1 hub3 last;
+    mbdy2 blade3 1;
+    bearing_vector 2 0.0 0.0 -1.0;
+  end bearing2;
+    ;
+  end constraint;
+  ;
+end new_htc_structure;
+;
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------
+begin wind ;
+  density                 1.225 ;
+  wsp                     8.0 ;
+  tint                    0.0 ;
+  horizontal_input        1 ;  0=false, 1=true
+  windfield_rotations     0 0.0 0.0 ;    yaw, tilt, rotation
+  center_pos0             0.0 0.0 -150 ;  center of turb box
+  shear_format            1  0 ;  0=none,1=constant,2=log,3=power,4=linear
+  turb_format             0 ;  0=none, 1=mann,2=flex
+  tower_shadow_method     0 ;  0=none, 1=potential flow, 2=jet, 3=potential 2
+  scale_time_start       0.0 ;
+end wind;
+;
+begin aero ;
+  nblades  3;
+  hub_vec shaft -3 ;  rotor rotation vector wrt. shaft coor sys (z upwind)
+  link 1 mbdy_c2_def blade1;
+  link 2 mbdy_c2_def blade2;
+  link 3 mbdy_c2_def blade3;
+  ae_filename ./data/IEA_15MW_RWT_ae_nsec_60.dat; The modified ae file, with 50 sections.
+  pc_filename ./data/IEA_15MW_RWT_pc_OpenFASTpolars_3dcorr.dat;
+  induction_method   1 ;  0=none, 1=normal
+  aerocalc_method    1 ;  0=aerodynamics disabled, 1=with aerodynamics
+  aero_distribution    ae_file   1;
+  ae_sets            1 1 1;
+  tiploss_method     1 ;  0=none, 1=prandtl
+  dynstall_method    2 ;  0=none, 1=stig øye method,2=mhh method
+;
+end aero ;
+;
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------
+;
+begin output;
+  filename ./res/IEA_15MW_RWT_ae_nsec_60 ;
+  data_format  hawc_ascii ;
+  buffer 10 ;
+  time 0 200;
+;
+  general time;
+  constraint bearing1 shaft_rot 2; angle and angle velocity
+  constraint bearing2 pitch1 5;    angle and angular velocity
+  constraint bearing2 pitch2 5;    angle and angular velocity
+  constraint bearing2 pitch3 5;    angle and angular velocity
+  aero omega ;
+  aero torque;
+  aero power;
+  aero thrust;
+  wind free_wind 1 0.0 0.0 -150; local wind at fixed position: coo (1=global,2=non-rotation rotor coo.), pos x, pos y, pos z
+  ; Moments:
+  mbdy momentvec tower  1 1  tower # tower base ;
+  mbdy momentvec tower  9 2  tower # tower yaw bearing ;
+  mbdy momentvec shaft  1 1  shaft # main bearing ;
+  mbdy momentvec blade1 1 1  blade1 # blade 1 root ;
+  mbdy momentvec blade2 1 1  blade2 # blade 2 root ;
+  mbdy momentvec blade3 1 1  blade3 # blade 3 root ;
+  ; Displacements and accellerations
+  mbdy state pos tower 9 1.0 global only 1 # Tower top FA displ;
+  mbdy state pos tower 9 1.0 global only 2 # Tower top SS displ;
+  mbdy state acc tower 9 1.0 global only 1 # Tower top FA acc;
+  mbdy state acc tower 9 1.0 global only 2 # Tower top SS acc;
+;
+  mbdy state pos blade1  9 1.0 blade1 # blade 1 tip pos ;
+  mbdy state pos blade2  9 1.0 blade2 # blade 2 tip pos ;
+  mbdy state pos blade3  9 1.0 blade3 # blade 3 tip pos ;
+  mbdy state pos blade1  9 1.0 global # gl blade 1 tip pos ;
+; - Monitor Aerodynamics - ;
+  aero windspeed 3 1 1 72.5;
+  aero alfa 1 72.5;
+  aero alfa 2 72.5;
+  aero alfa 3 72.5;
+  aero cl 1 72.5;
+  aero cl 2 72.5;
+  aero cl 3 72.5;
+  aero cd 1 72.5;
+  aero cd 2 72.5;
+  aero cd 3 72.5;
+  aero tors_e 1 72.5; Some sense of torsional angle.
+end output;
+;
+begin output_at_time aero 200.00; 
+  filename ./res/output_at_200s_ae_nsec_60 ;
+  alfa 1;           2         
+  vrel 1;           3         
+  cl 1;             4         
+  cd 1;             5         
+  cm 1;             6         
+  lift 1;           7         
+  drag 1;           8         
+  position 1 1 4;   9 Actual position of section, Blade 2, x, in Blade Coordinate system.
+  position 1 2 4;   10 Actual position of section, Blade 2, y, in Blade Coordinate system.
+  position 1 3 4;   11 Actual position of section, Blade 2, z, in Blade Coordinate system.
+  secforce 1 1 4;   12 Aerodynamic forces (Unit: N) Blade No. ; DOF No. ; Coordinate(Rotor Polar)
+  secforce 1 2 4;   13
+  secforce 1 3 4;   14
+  secmoment 1 1 4;  15
+  secmoment 1 2 4;  16
+  secmoment 1 3 4;  17
+  int_moment 1 1 4; 18
+  int_moment 1 2 4; 19
+  int_moment 1 3 4; 20
+end output_at_time; 
+;
+exit;

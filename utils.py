@@ -121,7 +121,7 @@ def save_results(results_dict, path):
     Saves a dictionary with the results in the desired path.
 
     Input:
-        results_dict: dict Dictionary of numpy arrays with the desired data to save.
+        results_dict: dict Dictionary with some numpy arrays with the desired data to save.
         path: str Path where to save the data
     """
     # Makes sure the extension is always .json
@@ -134,7 +134,11 @@ def save_results(results_dict, path):
         os.makedirs(directory)
 
     # Convert numpy arrays to lists
-    json_ready_dict = {key: value.tolist() for key, value in results_dict.items()}
+    # json_ready_dict = {key: value.tolist() for key, value in results_dict.items()}
+    json_ready_dict = {
+        key: (value.tolist() if isinstance(value, np.ndarray) else value)
+        for key, value in results_dict.items()
+        }
     
     # Save the dictionary as a JSON file
     with open(path, 'w') as f:

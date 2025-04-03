@@ -22,7 +22,7 @@ from utils import (
 omega = 0.5969
 omega_rpm = omega*30/np.pi
 print(f'{omega_rpm = }')
-pitch_deg = 2 # [deg]
+pitch_deg = 0 # [deg]
 pitch_rad = np.deg2rad(pitch_deg) # [rad]
 
 # Climate conditions
@@ -37,8 +37,8 @@ iter_max = 20
 # Folders and file names
 
 
-htc_filename = r'/home/juliovmlo/master_thesis/master_thesis/examples/input_only_hacw2/IEA_15MW_RWT_ae_nsec_50_stiff_pitch_2.htc'
-projectfolder = r'examples/project_folder_ae_nsec_50_stiff_pitch_2'
+htc_filename = 'examples/input_hawc2_no_e_offset/IEA_15MW_RWT_ae_nsec_50_pitch_2.htc'
+projectfolder = r'examples/project_v04_50_pitch_2'
 createProjectFolderV02(htc_filename,'./',projectfolder)
 
 #%% Initializing the structural model
@@ -136,7 +136,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     # Move aero loads to elastic centre
     node_pos = pos_old[:,:3]
     aero_loads_n = c2_to_node(c2_pos_old,node_pos,aero_loads) # Change location
-    aero_loads_n = aero_loads # Ignoring 'c2_to_node'
+    # aero_loads_n = aero_loads # Ignoring 'c2_to_node'
 
     # Calculate inertial loads
 
@@ -144,10 +144,13 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     inert_load = np.reshape(inert_load,(-1,6))
 
     # Add up loads and save
+    # load = inert_load.copy()
+    # load[:,3:] += aero_loads_n[:,3:] 
+    # load_distr = np.zeros_like(load)
+    # load_distr[:,:3] = aero_loads_n[:,:3]
+    
     load = inert_load.copy()
-    load[:,3:] += aero_loads_n[:,3:] 
-    load_distr = np.zeros_like(load)
-    load_distr[:,:3] = aero_loads_n[:,:3]
+    load_distr = aero_loads_n.copy()
 
     save_load(load,inputfolder_stru)
     save_distributed_load(load_distr,inputfolder_stru)
@@ -157,7 +160,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
     corotobj = CoRot(beam,numForceInc=10,max_iter=20)
     pos_new = np.reshape(corotobj.final_pos, (-1,6))
     tip_pos = pos_new[-1,0:3]
-    new_tip_def = tip_pos - tip_init_pos
+    new_tip_def = tip_pos - tip_init_pos 
 
     # Save deflections
     # Find new position of c2 and twist. Then create the c2_pos file
@@ -189,7 +192,7 @@ while abs(delta_u_rel) > epsilon and iter < iter_max:
 
     print("--- Iteration finished ---")
     print(f"Iteration {iter}")
-    print(f"Delta = {delta_u_rel:.5f} m")
+    print(f"Delta = {delta_u_rel:.5f} %")
     print(f"Old tip def = {old_tip_def} m")
     print(f"Tip def: {new_tip_def} m")
 
