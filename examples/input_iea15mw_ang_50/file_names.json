@@ -1,8 +1,0 @@
-{
-    "c2_file": "c2_pos.dat",
-    "st_file": "data/IEA_15MW_RWT_Blade_st_noFPM.st",
-    "st_subset": 1,
-    "ae_file": "data/IEA_15MW_RWT_ae_nsec_50.dat",
-    "pc_file": "data/IEA_15MW_RWT_pc.dat"
-}
-  
