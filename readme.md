@@ -1,11 +1,13 @@
 # Explanation of this branch
 
-I made this branch to exclusively contain the framework that I made for my master thesis project, which is contained in `framework_v02/`. It is important to note that I did not end up using it to get the results for the project, as I ran into other problems. Instead I used a script template that I would modify by hand, an example is of it would be `coupled_model_v04_ang_50_U6.py`.
+I made this branch to exclusively contain the framework that I made for my master thesis project, which is contained in `framework_v02/`. It is important to note that I did not end up using it to get the results for the project, as I ran into other problems. Instead I used a script template that I would modify by hand, an example of it would be `coupled_model_v04_ang_50_U6.py`.
 
 The framework description is explained in chapter 2.4 of the project, although I did not go into much detail. I would add that the inner workings of the coupling framework are in `framework_v02/coupling_framework/` and the specific implementations of the solvers using the framework are done in `framework_v02/solver_wrappers/`. 
 The final user experience of the framework is in the `framework_v02/main.py` file.
 
-Again, this code does not run for various reasons. On my machine at the moment it is not running due to problems with directory names. But I hope it can help you as a template for something that can work.
+Again, this code does not run for various reasons. On my machine at the moment it is not running due to problems with directory names. But you can always look at the script with the whole implementation that does actually work, to compare results and execution.
+
+If you want to look at my results, go to the main branch. It is a bit caotic non the less.
 
 ## Sumary of elements
 
